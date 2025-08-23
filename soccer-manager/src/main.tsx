@@ -4,7 +4,7 @@ import './index.css'
 import App from './App.tsx'
 import { registerSW } from 'virtual:pwa-register'
 import { installGlobalErrorHooks } from './utils/logger'
-import { ErrorBoundary } from './components/ErrorBoundary'
+import { ErrorBoundary } from './ErrorBoundary'
 
 installGlobalErrorHooks()
 
