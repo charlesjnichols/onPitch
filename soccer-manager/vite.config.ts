@@ -4,7 +4,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 import legacy from '@vitejs/plugin-legacy'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     legacy({
@@ -45,5 +45,10 @@ export default defineConfig({
   ],
   build: {
     target: 'es2019'
-  }
-})
+  },
+  define: mode === 'development' ? {
+    'process.env.NODE_ENV': '"development"',
+    'import.meta.env.DEV': 'true',
+    'import.meta.env.PROD': 'false'
+  } : {}
+}))
