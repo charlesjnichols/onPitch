@@ -2,6 +2,23 @@ import Papa from 'papaparse'
 import { useAppStore } from '../store'
 import { formatClock } from '../utils/time'
 
+async function unregisterServiceWorkerAndClearCaches() {
+  try {
+    if ('serviceWorker' in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations()
+      for (const reg of regs) await reg.unregister()
+    }
+    if ('caches' in window) {
+      const names = await caches.keys()
+      await Promise.all(names.map(n => caches.delete(n)))
+    }
+    alert('Service worker unregistered and caches cleared. Reloading...')
+    location.reload()
+  } catch {
+    alert('Failed to unregister SW or clear caches')
+  }
+}
+
 export default function CSVExport() {
   const roster = useAppStore(s => s.roster)
   const subs = useAppStore(s => s.subs)
@@ -47,6 +64,7 @@ export default function CSVExport() {
     <div className="flex gap-2">
       <button className="px-3 py-2 rounded border border-neutral-700 bg-neutral-800 text-sm" onClick={exportMinutes}>Export Minutes CSV</button>
       <button className="px-3 py-2 rounded border border-neutral-700 bg-neutral-800 text-sm" onClick={exportSubs}>Export Subs CSV</button>
+      <button className="px-3 py-2 rounded border border-neutral-700 bg-neutral-800 text-sm" onClick={unregisterServiceWorkerAndClearCaches}>SW: Unregister & Clear Cache</button>
     </div>
   )
 }

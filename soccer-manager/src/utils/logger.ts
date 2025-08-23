@@ -1,4 +1,5 @@
 type LogLevel = 'info' | 'warn' | 'error'
+import { uid } from './uid'
 
 export interface LogEntry {
   id: string
@@ -11,15 +12,15 @@ export interface LogEntry {
 const logs: LogEntry[] = []
 
 export function logEvent(message: string, context?: any) {
-  logs.push({ id: crypto.randomUUID(), level: 'info', message, context, timestampMs: Date.now() })
+  logs.push({ id: uid(), level: 'info', message, context, timestampMs: Date.now() })
 }
 
 export function logWarn(message: string, context?: any) {
-  logs.push({ id: crypto.randomUUID(), level: 'warn', message, context, timestampMs: Date.now() })
+  logs.push({ id: uid(), level: 'warn', message, context, timestampMs: Date.now() })
 }
 
 export function logError(message: string, context?: any) {
-  logs.push({ id: crypto.randomUUID(), level: 'error', message, context, timestampMs: Date.now() })
+  logs.push({ id: uid(), level: 'error', message, context, timestampMs: Date.now() })
 }
 
 export function getLogs() {
