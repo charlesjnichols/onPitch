@@ -1,13 +1,14 @@
-import { DndContext, DragEndEvent, DragOverlay, useSensor, useSensors, PointerSensor } from '@dnd-kit/core'
-import { useDroppable, useDraggable, rectIntersection } from '@dnd-kit/core'
+import { DndContext, useSensor, useSensors, PointerSensor, rectIntersection } from '@dnd-kit/core'
+import type { DragEndEvent } from '@dnd-kit/core'
+import { useDroppable, useDraggable } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useAppStore } from '../store'
 
 function SlotToken({ id, x, y, label, playerId }: { id: string, x: number, y: number, label: string, playerId?: string }) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({ id })
   const style = {
-    transform: CSS.Translate.toString(transform ?? { x: 0, y: 0 }),
+    transform: transform ? CSS.Translate.toString(transform) : undefined,
     left: `${x * 100}%`,
     top: `${y * 100}%`,
   } as React.CSSProperties
@@ -22,7 +23,7 @@ function SlotToken({ id, x, y, label, playerId }: { id: string, x: number, y: nu
 
 function BenchItem({ id, name, number }: { id: string, name: string, number?: number }) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({ id })
-  const style = { transform: CSS.Translate.toString(transform ?? { x: 0, y: 0 }) }
+  const style = { transform: transform ? CSS.Translate.toString(transform) : undefined }
   return (
     <div ref={setNodeRef} {...listeners} {...attributes} className="rounded-md border border-neutral-800 bg-neutral-900/60 p-2 text-sm" style={style}>
       {number ? `#${number} ` : ''}{name}
@@ -39,11 +40,8 @@ export default function TacticsBoard() {
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
 
-  const [activeId, setActiveId] = useState<string | null>(null)
-
   const onDragEnd = (event: DragEndEvent) => {
     const { active, over } = event
-    setActiveId(null)
     if (!over) return
 
     const activeId = String(active.id)
@@ -55,14 +53,11 @@ export default function TacticsBoard() {
     if (isBenchPlayer && isSlot) {
       const playerId = activeId.replace('bench:', '')
       const slotId = overId.replace('slot:', '')
-      // sub in player to slot; optionally if slot had a player, sub out
       const prevPlayerId = tactics.find(t => t.id === slotId)?.playerId
       assignPlayerToSlot(slotId, playerId)
-      // update roster on-field flags
       if (prevPlayerId && prevPlayerId !== playerId) {
         makeSub(playerId, prevPlayerId)
       } else {
-        // if no previous, just mark in
         makeSub(playerId, undefined)
       }
       return
@@ -88,8 +83,11 @@ export default function TacticsBoard() {
 
   const benchPlayers = useMemo(() => roster.filter(p => !p.isOnField), [roster])
 
+  // Register bench droppable
+  const { setNodeRef: setBenchRef } = useDroppable({ id: 'bench' })
+
   return (
-    <DndContext sensors={sensors} collisionDetection={rectIntersection} onDragEnd={onDragEnd} onDragStart={(e) => setActiveId(String(e.active.id))}>
+    <DndContext sensors={sensors} collisionDetection={rectIntersection} onDragEnd={onDragEnd}>
       <div className="grid md:grid-cols-3 gap-4">
         <div className="md:col-span-2 rounded-xl border border-neutral-800 bg-gradient-to-b from-emerald-950/60 to-neutral-950 relative" style={{ aspectRatio: '2 / 3' }}>
           {/* pitch lines */}
@@ -98,15 +96,18 @@ export default function TacticsBoard() {
           <div className="absolute left-3 right-3 top-1/4 h-24 border border-emerald-900/60 rounded-md" />
           <div className="absolute left-3 right-3 bottom-1/4 h-24 border border-emerald-900/60 rounded-md" />
 
-          {tactics.map(slot => (
-            <div key={slot.id} id={`slot:${slot.id}`} className="absolute" style={{ left: `${slot.x * 100}%`, top: `${slot.y * 100}%`, transform: 'translate(-50%, -50%)' }}>
-              <SlotToken id={`slot:${slot.id}`} x={slot.x} y={slot.y} label={slot.id.toUpperCase()} playerId={slot.playerId} />
-            </div>
-          ))}
+          {tactics.map(slot => {
+            const { setNodeRef } = useDroppable({ id: `slot:${slot.id}` })
+            return (
+              <div key={slot.id} ref={setNodeRef} className="absolute" style={{ left: `${slot.x * 100}%`, top: `${slot.y * 100}%`, transform: 'translate(-50%, -50%)' }}>
+                <SlotToken id={`slot:${slot.id}`} x={slot.x} y={slot.y} label={slot.id.toUpperCase()} playerId={slot.playerId} />
+              </div>
+            )
+          })}
         </div>
         <div>
           <div className="mb-2 text-sm text-neutral-300">Bench</div>
-          <div id="bench" className="grid gap-2">
+          <div ref={setBenchRef} className="grid gap-2">
             {benchPlayers.length === 0 && <div className="text-xs text-neutral-500">No bench players</div>}
             {benchPlayers.map(p => (
               <BenchItem key={p.id} id={`bench:${p.id}`} name={p.name} number={p.number} />
