@@ -64,7 +64,7 @@ function BenchItem({ id, name, number, onLongPress }: { id: string, name: string
   }, [id, onLongPress])
 
   return (
-    <div ref={itemRef} className="rounded-md border border-neutral-800 bg-neutral-900/60 p-3 text-sm min-h-11 touch-manipulation cursor-pointer" aria-label={`Bench ${number ? `#${number} ` : ''}${name}`}>
+    <div ref={itemRef} className="rounded-md border border-neutral-800 bg-neutral-900/60 p-3 text-sm min-h-11 touch-manipulation cursor-pointer focus:outline focus:outline-2 focus:outline-emerald-500/70" aria-label={`Bench ${number ? `#${number} ` : ''}${name}`}>
       {number ? `#${number} ` : ''}{name}
     </div>
   )
@@ -275,14 +275,15 @@ export default function PointerTacticsBoard() {
           const aria = player ? `${slot.id.toUpperCase()} — ${formatClock(getLiveMinutesMs(player.id))} played` : `${slot.id.toUpperCase()} — empty`
           return (
             <div key={slot.id} className="absolute" style={{ left: `${slot.x * 100}%`, top: `${slot.y * 100}%`, transform: 'translate(-50%, -50%)' }}>
-              <div
+                              <div
                 role="button"
+                tabIndex={0}
                 aria-label={aria}
                 data-draggable
                 data-type="slot"
                 data-id={slot.id}
                 data-label={slot.id.toUpperCase()}
-                className="absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer touch-none"
+                className="absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer touch-none focus:outline focus:outline-2 focus:outline-emerald-500/70 rounded-full"
                 style={{ left: 0, top: 0 }}
               >
                 <div className={`w-12 h-12 rounded-full border flex items-center justify-center text-xs ${player ? 'bg-emerald-700/30 border-emerald-600' : 'bg-neutral-800/80 border-neutral-700'}`}>
