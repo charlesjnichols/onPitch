@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build --minify=false --sourcemap",
+    "build": "tsc -b && vite build",
+    "build:debug": "tsc -b && vite build --minify=false --sourcemap",
     "lint": "eslint .",
     "preview": "vite preview"
   },
