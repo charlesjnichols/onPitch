@@ -110,7 +110,8 @@ function SubSheet({ open, benchPlayerId, onClose }: { open: boolean, benchPlayer
 }
 
 export default function PointerTacticsBoard() {
-  const { tactics, roster } = useAppStore(s => ({ tactics: s.tactics, roster: s.roster }))
+  const tactics = useAppStore(s => s.tactics)
+  const roster = useAppStore(s => s.roster)
   const assignPlayerToSlot = useAppStore(s => s.assignPlayerToSlot)
   const swapSlotPlayers = useAppStore(s => s.swapSlotPlayers)
   const benchPlayer = useAppStore(s => s.benchPlayer)
