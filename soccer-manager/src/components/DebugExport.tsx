@@ -2,15 +2,15 @@ import { useAppStore } from '../store'
 import { getLogs } from '../utils/logger'
 
 export default function DebugExport() {
-  const snapshot = useAppStore(s => ({
-    roster: s.roster,
-    subs: s.subs,
-    tactics: s.tactics,
-    clock: s.clock,
-    config: s.config,
-  }))
-
   const exportDebug = () => {
+    const s = useAppStore.getState()
+    const snapshot = {
+      roster: s.roster,
+      subs: s.subs,
+      tactics: s.tactics,
+      clock: s.clock,
+      config: s.config,
+    }
     const payload = {
       snapshot,
       logs: getLogs(),
