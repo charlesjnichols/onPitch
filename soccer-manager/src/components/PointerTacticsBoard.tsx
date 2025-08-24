@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '../store'
 import { formatClock } from '../utils/time'
 import SubSheet from './SubSheet'
+import { playerEligibleForSlot, getEligibleTagsForSlot } from '../utils/positions'
 
 interface DragState {
   kind: 'bench' | 'slot'
@@ -100,6 +101,7 @@ export default function PointerTacticsBoard() {
 
   const [sheetOpen, setSheetOpen] = useState(false)
   const [sheetBenchId, setSheetBenchId] = useState<string | undefined>(undefined)
+  const [selectedSlotId, setSelectedSlotId] = useState<string | undefined>(undefined)
 
   const schedule = useRafUpdater(() => {
     const ds = dragRef.current
@@ -227,6 +229,11 @@ export default function PointerTacticsBoard() {
     setSheetOpen(true)
   }
 
+  const eligibleBenchForSelected = useMemo(() => {
+    if (!selectedSlotId) return benchPlayers
+    return benchPlayers.filter(p => playerEligibleForSlot(p, selectedSlotId))
+  }, [benchPlayers, selectedSlotId])
+
   return (
     <div className="grid md:grid-cols-3 gap-4">
       <div className="md:col-span-2">
@@ -247,6 +254,8 @@ export default function PointerTacticsBoard() {
           {tactics.map(slot => {
             const player = roster.find(p => p.id === slot.playerId)
             const aria = player ? `${slot.id.toUpperCase()} — ${formatClock(getLiveMinutesMs(player.id))} played` : `${slot.id.toUpperCase()} — empty`
+            const isSelected = selectedSlotId === slot.id
+            const eligibleTags = getEligibleTagsForSlot(slot.id)
             return (
               <div key={slot.id} className="absolute" style={{ left: `${slot.x * 100}%`, top: `${slot.y * 100}%`, transform: 'translate(-50%, -50%)' }}>
                 <div
@@ -257,12 +266,19 @@ export default function PointerTacticsBoard() {
                   data-type="slot"
                   data-id={slot.id}
                   data-label={slot.id.toUpperCase()}
-                  className="absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer touch-none focus:outline focus:outline-2 focus:outline-emerald-500/70 rounded-full"
+                  className={`absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer touch-none focus:outline focus:outline-2 focus:outline-emerald-500/70 rounded-full ${isSelected ? 'ring-2 ring-emerald-500/80' : ''}`}
                   style={{ left: 0, top: 0 }}
+                  onClick={() => setSelectedSlotId(isSelected ? undefined : slot.id)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') setSelectedSlotId(isSelected ? undefined : slot.id) }}
                 >
                   <div className={`w-12 h-12 rounded-full border flex items-center justify-center text-xs ${player ? 'bg-emerald-700/30 border-emerald-600' : 'bg-neutral-800/80 border-neutral-700'}`}>
                     {slot.id.toUpperCase()}
                   </div>
+                  {!player && eligibleTags.length > 0 && (
+                    <div className="absolute left-1/2 -translate-x-1/2 top-12 mt-1 text-[10px] text-neutral-400 whitespace-nowrap">
+                      Eligible: {eligibleTags.join('/')}
+                    </div>
+                  )}
                 </div>
               </div>
             )
@@ -270,15 +286,39 @@ export default function PointerTacticsBoard() {
         </div>
       </div>
       <div>
-        <div className="mb-2 text-sm text-neutral-300">Bench</div>
+        <div className="mb-2 text-sm text-neutral-300">Bench{selectedSlotId ? ` — Eligible for ${selectedSlotId.toUpperCase()}` : ''}</div>
         <div ref={benchRef} className="grid gap-2">
-          {benchPlayers.length === 0 && <div className="text-xs text-neutral-500">No bench players</div>}
-          {benchPlayers.map(p => (
-            <div key={p.id} data-draggable data-type="bench" data-id={p.id} data-label={p.number ? `#${p.number}` : p.name} aria-label={`Bench — ${p.name}`} className="[&>*]:pointer-events-none">
+          {eligibleBenchForSelected.length === 0 && <div className="text-xs text-neutral-500">No bench players</div>}
+          {eligibleBenchForSelected.map(p => (
+            <div
+              key={p.id}
+              data-draggable
+              data-type="bench"
+              data-id={p.id}
+              data-label={p.number ? `#${p.number}` : p.name}
+              aria-label={`Bench — ${p.name}`}
+              className="[&>*]:pointer-events-none"
+              onClick={() => {
+                if (!selectedSlotId) return
+                const prevPlayerId = tactics.find(t => t.id === selectedSlotId)?.playerId
+                assignPlayerToSlot(selectedSlotId, p.id)
+                if (prevPlayerId && prevPlayerId !== p.id) {
+                  makeSub(p.id, prevPlayerId)
+                } else {
+                  makeSub(p.id, undefined)
+                }
+                setSelectedSlotId(undefined)
+              }}
+            >
               <BenchItem id={p.id} name={p.name} number={p.number} onLongPress={() => onLongPressBench(p.id)} />
             </div>
           ))}
         </div>
+        {selectedSlotId && (
+          <div className="mt-3 grid gap-2">
+            <div className="text-xs text-neutral-400">Tap a bench player to assign to {selectedSlotId.toUpperCase()}.</div>
+          </div>
+        )}
       </div>
 
       <SubSheet open={sheetOpen} benchPlayerId={sheetBenchId} onClose={() => setSheetOpen(false)} />
