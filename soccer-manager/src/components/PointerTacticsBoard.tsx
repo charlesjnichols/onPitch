@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '../store'
 import { formatClock } from '../utils/time'
+import SubSheet from './SubSheet'
 
 interface DragState {
   kind: 'bench' | 'slot'
@@ -70,45 +71,6 @@ function BenchItem({ id, name, number, onLongPress }: { id: string, name: string
   )
 }
 
-function SubSheet({ open, benchPlayerId, onClose }: { open: boolean, benchPlayerId?: string, onClose: () => void }) {
-  const roster = useAppStore(s => s.roster)
-  const getLiveMinutesMs = useAppStore(s => s.getLiveMinutesMs)
-  const makeSub = useAppStore(s => s.makeSub)
-  const [note, setNote] = useState('')
-
-  if (!open || !benchPlayerId) return null
-
-  const candidates = roster.filter(p => p.isOnField)
-    .map(p => ({ p, ms: getLiveMinutesMs(p.id) }))
-    .sort((a, b) => b.ms - a.ms)
-    .slice(0, 5)
-
-  return (
-    <div role="dialog" aria-modal className="fixed inset-0 z-50" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/50" />
-      <div className="absolute left-0 right-0 bottom-0 bg-neutral-900 border-t border-neutral-800 rounded-t-xl p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]" onClick={(e) => e.stopPropagation()}>
-        <div className="h-1 w-12 bg-neutral-700 rounded mx-auto mb-3" />
-        <div className="text-sm text-neutral-300 mb-2">Sub for</div>
-        <div className="grid gap-2">
-          {candidates.length === 0 && <div className="text-sm text-neutral-500">No on-field players</div>}
-          {candidates.map(({ p, ms }) => (
-            <button key={p.id} className="text-left px-3 py-3 rounded border border-neutral-700 bg-neutral-800 cursor-pointer touch-manipulation" onClick={() => { makeSub(benchPlayerId, p.id, note || undefined); onClose(); setNote('') }}>
-              <div className="flex items-center justify-between">
-                <div className="text-sm">{p.number ? `#${p.number} ` : ''}{p.name}</div>
-                <div className="text-xs text-neutral-400">{formatClock(ms)}</div>
-              </div>
-            </button>
-          ))}
-        </div>
-        <div className="mt-3 grid gap-2">
-          <input className="w-full bg-neutral-800/60 rounded px-3 py-2 text-sm" placeholder="Note (optional)" value={note} onChange={(e) => setNote(e.target.value)} />
-          <button className="px-3 py-2 rounded border border-neutral-700 bg-neutral-800 text-sm" onClick={onClose}>Cancel</button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 export default function PointerTacticsBoard() {
   const tactics = useAppStore(s => s.tactics)
   const roster = useAppStore(s => s.roster)
@@ -117,6 +79,8 @@ export default function PointerTacticsBoard() {
   const benchPlayer = useAppStore(s => s.benchPlayer)
   const makeSub = useAppStore(s => s.makeSub)
   const getLiveMinutesMs = useAppStore(s => s.getLiveMinutesMs)
+  const formation = useAppStore(s => s.formation)
+  const setFormation = useAppStore(s => s.setFormation)
 
   useEffect(() => {
     const ua = navigator.userAgent
@@ -265,35 +229,45 @@ export default function PointerTacticsBoard() {
 
   return (
     <div className="grid md:grid-cols-3 gap-4">
-      <div ref={pitchRef} className="md:col-span-2 rounded-xl border border-neutral-800 bg-gradient-to-b from-emerald-950/60 to-neutral-950 relative touch-none select-none" style={{ aspectRatio: '2 / 3' }}>
-        <div className="absolute inset-3 border border-emerald-900/60 rounded-lg" />
-        <div className="absolute left-1/2 top-3 bottom-3 border-l border-emerald-900/60" />
-        <div className="absolute left-3 right-3 top-1/4 h-24 border border-emerald-900/60 rounded-md" />
-        <div className="absolute left-3 right-3 bottom-1/4 h-24 border border-emerald-900/60 rounded-md" />
+      <div className="md:col-span-2">
+        <div className="flex items-center justify-between mb-2">
+          <div className="text-sm text-neutral-300">Formation</div>
+          <select className="bg-neutral-800/60 rounded px-2 py-1 text-sm" value={formation} onChange={(e) => setFormation(e.target.value as any)}>
+            <option value="4-3-3">4-3-3</option>
+            <option value="4-4-2">4-4-2</option>
+            <option value="3-5-2">3-5-2</option>
+          </select>
+        </div>
+        <div ref={pitchRef} className="rounded-xl border border-neutral-800 bg-gradient-to-b from-emerald-950/60 to-neutral-950 relative touch-none select-none" style={{ aspectRatio: '2 / 3' }}>
+          <div className="absolute inset-3 border border-emerald-900/60 rounded-lg" />
+          <div className="absolute left-1/2 top-3 bottom-3 border-l border-emerald-900/60" />
+          <div className="absolute left-3 right-3 top-1/4 h-24 border border-emerald-900/60 rounded-md" />
+          <div className="absolute left-3 right-3 bottom-1/4 h-24 border border-emerald-900/60 rounded-md" />
 
-        {tactics.map(slot => {
-          const player = roster.find(p => p.id === slot.playerId)
-          const aria = player ? `${slot.id.toUpperCase()} — ${formatClock(getLiveMinutesMs(player.id))} played` : `${slot.id.toUpperCase()} — empty`
-          return (
-            <div key={slot.id} className="absolute" style={{ left: `${slot.x * 100}%`, top: `${slot.y * 100}%`, transform: 'translate(-50%, -50%)' }}>
-                              <div
-                role="button"
-                tabIndex={0}
-                aria-label={aria}
-                data-draggable
-                data-type="slot"
-                data-id={slot.id}
-                data-label={slot.id.toUpperCase()}
-                className="absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer touch-none focus:outline focus:outline-2 focus:outline-emerald-500/70 rounded-full"
-                style={{ left: 0, top: 0 }}
-              >
-                <div className={`w-12 h-12 rounded-full border flex items-center justify-center text-xs ${player ? 'bg-emerald-700/30 border-emerald-600' : 'bg-neutral-800/80 border-neutral-700'}`}>
-                  {slot.id.toUpperCase()}
+          {tactics.map(slot => {
+            const player = roster.find(p => p.id === slot.playerId)
+            const aria = player ? `${slot.id.toUpperCase()} — ${formatClock(getLiveMinutesMs(player.id))} played` : `${slot.id.toUpperCase()} — empty`
+            return (
+              <div key={slot.id} className="absolute" style={{ left: `${slot.x * 100}%`, top: `${slot.y * 100}%`, transform: 'translate(-50%, -50%)' }}>
+                <div
+                  role="button"
+                  tabIndex={0}
+                  aria-label={aria}
+                  data-draggable
+                  data-type="slot"
+                  data-id={slot.id}
+                  data-label={slot.id.toUpperCase()}
+                  className="absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer touch-none focus:outline focus:outline-2 focus:outline-emerald-500/70 rounded-full"
+                  style={{ left: 0, top: 0 }}
+                >
+                  <div className={`w-12 h-12 rounded-full border flex items-center justify-center text-xs ${player ? 'bg-emerald-700/30 border-emerald-600' : 'bg-neutral-800/80 border-neutral-700'}`}>
+                    {slot.id.toUpperCase()}
+                  </div>
                 </div>
               </div>
-            </div>
-          )
-        })}
+            )
+          })}
+        </div>
       </div>
       <div>
         <div className="mb-2 text-sm text-neutral-300">Bench</div>

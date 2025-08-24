@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
-import type { MatchState, Player, SubEvent, TacticsSlot } from './types'
+import type { MatchState, Player, SubEvent, TacticsSlot, FormationId } from './types'
 import { uid } from './utils/uid'
 
 const DEFAULT_TACTICS: TacticsSlot[] = [
@@ -17,6 +17,48 @@ const DEFAULT_TACTICS: TacticsSlot[] = [
   { id: 'st', x: 0.82, y: 0.5 },
   { id: 'rw', x: 0.78, y: 0.75 },
 ]
+
+const FORMATION_LAYOUTS: Record<FormationId, Record<string, { x: number, y: number }>> = {
+  '4-3-3': {
+    gk: { x: 0.08, y: 0.50 },
+    lb: { x: 0.25, y: 0.20 },
+    lcb: { x: 0.25, y: 0.40 },
+    rcb: { x: 0.25, y: 0.60 },
+    rb: { x: 0.25, y: 0.80 },
+    lcm: { x: 0.50, y: 0.30 },
+    cm: { x: 0.50, y: 0.50 },
+    rcm: { x: 0.50, y: 0.70 },
+    lw: { x: 0.78, y: 0.25 },
+    st: { x: 0.82, y: 0.50 },
+    rw: { x: 0.78, y: 0.75 },
+  },
+  '4-4-2': {
+    gk: { x: 0.08, y: 0.50 },
+    lb: { x: 0.25, y: 0.20 },
+    lcb: { x: 0.25, y: 0.40 },
+    rcb: { x: 0.25, y: 0.60 },
+    rb: { x: 0.25, y: 0.80 },
+    lcm: { x: 0.52, y: 0.28 }, // LM approx
+    cm: { x: 0.52, y: 0.50 },  // CM
+    rcm: { x: 0.52, y: 0.72 }, // RM approx
+    lw: { x: 0.75, y: 0.35 },  // LF
+    st: { x: 0.80, y: 0.50 },  // CF
+    rw: { x: 0.75, y: 0.65 },  // RF
+  },
+  '3-5-2': {
+    gk: { x: 0.08, y: 0.50 },
+    lb: { x: 0.25, y: 0.30 },  // LCB approx
+    lcb: { x: 0.25, y: 0.50 }, // CB
+    rcb: { x: 0.25, y: 0.70 }, // RCB
+    rb: { x: 0.40, y: 0.50 },  // CDM-ish anchor
+    lcm: { x: 0.55, y: 0.30 }, // LCM
+    cm: { x: 0.55, y: 0.50 },  // CM
+    rcm: { x: 0.55, y: 0.70 }, // RCM
+    lw: { x: 0.70, y: 0.35 },  // ST1
+    st: { x: 0.78, y: 0.50 },  // ST2
+    rw: { x: 0.70, y: 0.65 },  // ST1 mirror
+  },
+}
 
 export interface AppStore extends MatchState {
   // roster
@@ -39,6 +81,13 @@ export interface AppStore extends MatchState {
   swapSlotPlayers: (slotAId: string, slotBId: string) => void
   benchPlayer: (playerId: string) => void
 
+  // formation + wrappers
+  setFormation: (formation: FormationId) => void
+  placePlayerInSlot: (slotId: string, playerId: string) => void
+  benchPlayerFromSlot: (slotId: string) => void
+  swapSlots: (slotAId: string, slotBId: string) => void
+  subBenchForSlot: (benchPlayerId: string, slotId: string) => void
+
   // helpers
   getLiveMinutesMs: (playerId: string) => number
   resetForNewGame: () => void
@@ -48,6 +97,7 @@ const initialState: MatchState = {
   roster: [],
   subs: [],
   tactics: DEFAULT_TACTICS,
+  formation: '4-3-3',
   clock: { isRunning: false, accumulatedMs: 0 },
   config: { maxOnField: 11, rotationIntervalMinutes: 6 },
 }
@@ -79,9 +129,15 @@ export const useAppStore = create<AppStore>()(
         tactics: s.tactics.map(slot => slot.playerId === id ? { ...slot, playerId: undefined } : slot)
       })),
 
-      toggleStarter: (id, isOnField) => set((s) => ({
-        roster: s.roster.map(pl => pl.id === id ? { ...pl, isOnField } : pl)
-      })),
+      toggleStarter: (id, isOnField) => set((s) => {
+        if (isOnField) {
+          const currentOn = s.roster.filter(p => p.isOnField).length
+          if (currentOn >= s.config.maxOnField) return s
+        }
+        return {
+          roster: s.roster.map(pl => pl.id === id ? { ...pl, isOnField } : pl)
+        }
+      }),
 
       startClock: () => set((s) => s.clock.isRunning ? s : ({
         clock: { ...s.clock, isRunning: true, startedAtMs: Date.now() }
@@ -166,6 +222,81 @@ export const useAppStore = create<AppStore>()(
         tactics: s.tactics.map(slot => slot.playerId === playerId ? { ...slot, playerId: undefined } : slot)
       })),
 
+      setFormation: (formation) => set((s) => {
+        const layout = FORMATION_LAYOUTS[formation]
+        const tactics = s.tactics.map(slot => {
+          const pos = layout[slot.id] ?? { x: slot.x, y: slot.y }
+          return { ...slot, x: pos.x, y: pos.y }
+        })
+        return { formation, tactics }
+      }),
+
+      placePlayerInSlot: (slotId, playerId) => set((s) => {
+        const current = s.tactics.find(t => t.id === slotId)
+        const prevPlayerId = current?.playerId
+        const result: any = {}
+        // assign slot
+        const tactics = s.tactics.map(t => t.id === slotId ? { ...t, playerId } : (t.playerId === playerId ? { ...t, playerId: undefined } : t))
+        result.tactics = tactics
+        // perform sub semantics to update onField flags and minutes
+        const now = Date.now()
+        let roster = s.roster
+        if (s.clock.isRunning && s.clock.startedAtMs) {
+          const elapsed = now - s.clock.startedAtMs
+          roster = roster.map(pl => pl.isOnField ? { ...pl, minutesPlayedMs: pl.minutesPlayedMs + elapsed } : pl)
+        }
+        if (prevPlayerId) {
+          roster = roster.map(pl => pl.id === prevPlayerId ? { ...pl, isOnField: false } : pl)
+        }
+        roster = roster.map(pl => pl.id === playerId ? { ...pl, isOnField: true } : pl)
+        if (roster.filter(p => p.isOnField).length > s.config.maxOnField) {
+          roster = roster.map(pl => pl.id === playerId ? { ...pl, isOnField: false } : pl)
+        }
+        result.roster = roster
+        result.clock = { ...s.clock, startedAtMs: s.clock.isRunning ? now : s.clock.startedAtMs }
+        return result
+      }),
+
+      benchPlayerFromSlot: (slotId) => set((s) => {
+        const slot = s.tactics.find(t => t.id === slotId)
+        if (!slot?.playerId) return s
+        const playerId = slot.playerId
+        const tactics = s.tactics.map(t => t.id === slotId ? { ...t, playerId: undefined } : t)
+        const roster = s.roster.map(pl => pl.id === playerId ? { ...pl, isOnField: false } : pl)
+        return { tactics, roster }
+      }),
+
+      swapSlots: (slotAId, slotBId) => set((s) => {
+        const tactics = s.tactics.map(slot => ({ ...slot }))
+        const a = tactics.find(sl => sl.id === slotAId)
+        const b = tactics.find(sl => sl.id === slotBId)
+        if (!a || !b) return s
+        const tmp = a.playerId
+        a.playerId = b.playerId
+        b.playerId = tmp
+        return { tactics }
+      }),
+
+      subBenchForSlot: (benchPlayerId, slotId) => set((s) => {
+        const prev = s.tactics.find(t => t.id === slotId)?.playerId
+        const now = Date.now()
+        let roster = s.roster
+        if (s.clock.isRunning && s.clock.startedAtMs) {
+          const elapsed = now - s.clock.startedAtMs
+          roster = roster.map(pl => pl.isOnField ? { ...pl, minutesPlayedMs: pl.minutesPlayedMs + elapsed } : pl)
+        }
+        if (prev) {
+          roster = roster.map(pl => pl.id === prev ? { ...pl, isOnField: false } : pl)
+        }
+        roster = roster.map(pl => pl.id === benchPlayerId ? { ...pl, isOnField: true } : pl)
+        if (roster.filter(p => p.isOnField).length > s.config.maxOnField) {
+          roster = roster.map(pl => pl.id === benchPlayerId ? { ...pl, isOnField: false } : pl)
+        }
+        const tactics = s.tactics.map(t => t.id === slotId ? { ...t, playerId: benchPlayerId } : (t.playerId === benchPlayerId ? { ...t, playerId: undefined } : t))
+        const sub: SubEvent = { id: uid(), timestampMs: now, playerInId: benchPlayerId, playerOutId: prev }
+        return { roster, tactics, subs: [...s.subs, sub], clock: { ...s.clock, startedAtMs: s.clock.isRunning ? now : s.clock.startedAtMs } }
+      }),
+
       getLiveMinutesMs: (playerId) => {
         const s = get()
         const pl = s.roster.find(p => p.id === playerId)
@@ -190,6 +321,7 @@ export const useAppStore = create<AppStore>()(
         roster: s.roster,
         subs: s.subs,
         tactics: s.tactics,
+        formation: s.formation,
         clock: s.clock,
         config: s.config,
       }),
