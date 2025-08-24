@@ -40,10 +40,13 @@ export interface TacticsSlot {
   playerId?: string;
 }
 
+export type FormationId = '4-4-2' | '4-3-3' | '3-5-2'
+
 export interface MatchState {
   roster: Player[];
   subs: SubEvent[];
   tactics: TacticsSlot[];
+  formation: FormationId;
   clock: MatchClockState;
   config: MatchConfig;
 }
