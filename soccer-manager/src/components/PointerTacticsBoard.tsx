@@ -257,7 +257,7 @@ export default function PointerTacticsBoard() {
             const isSelected = selectedSlotId === slot.id
             const eligibleTags = getEligibleTagsForSlot(slot.id)
             return (
-              <div key={slot.id} className="absolute" style={{ left: `${slot.x * 100}%`, top: `${slot.y * 100}%`, transform: 'translate(-50%, -50%)' }}>
+              <div key={slot.id} className="absolute" style={{ left: `${slot.x * 100}%`, top: `${slot.y * 100}%` }}>
                 <div
                   role="button"
                   tabIndex={0}
@@ -267,22 +267,22 @@ export default function PointerTacticsBoard() {
                   data-id={slot.id}
                   data-label={slot.id.toUpperCase()}
                   className={`absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer touch-none focus:outline focus:outline-2 focus:outline-emerald-500/70 rounded-full ${isSelected ? 'ring-2 ring-emerald-500/80' : ''}`}
-                  style={{ left: 0, top: 0 }}
+                  style={{ left: '50%', top: '50%' }}
                   onClick={() => setSelectedSlotId(isSelected ? undefined : slot.id)}
                   onKeyDown={(e) => { if (e.key === 'Enter') setSelectedSlotId(isSelected ? undefined : slot.id) }}
                 >
                   <div className={`w-12 h-12 rounded-full border flex items-center justify-center text-xs ${player ? 'bg-emerald-700/30 border-emerald-600' : 'bg-neutral-800/80 border-neutral-700'}`}>
                     {slot.id.toUpperCase()}
                   </div>
-                  {!player && eligibleTags.length > 0 && (() => {
-                    const labelClass = slot.x < 0.15 ? 'left-0 translate-x-0 text-left' : (slot.x > 0.85 ? 'right-0 translate-x-0 text-right' : 'left-1/2 -translate-x-1/2 text-center')
-                    return (
-                      <div className={`absolute ${labelClass} top-12 mt-1 text-[10px] text-neutral-400 whitespace-nowrap`}>
-                        Eligible: {eligibleTags.join('/')}
-                      </div>
-                    )
-                  })() }
                 </div>
+                {!player && eligibleTags.length > 0 && (() => {
+                  const labelClass = slot.x < 0.15 ? 'left-0 translate-x-0 text-left' : (slot.x > 0.85 ? 'right-0 translate-x-0 text-right' : 'left-1/2 -translate-x-1/2 text-center')
+                  return (
+                    <div className={`absolute ${labelClass} mt-1 text-[10px] text-neutral-400 whitespace-nowrap`} style={{ top: 'calc(50% + 28px)' }}>
+                      Eligible: {eligibleTags.join('/')}
+                    </div>
+                  )
+                })()}
               </div>
             )
           })}
