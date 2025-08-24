@@ -1,0 +1,30 @@
+{
+  "name": "onPitch-dev",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
+  "postCreateCommand": "mkdir -p ~/.continue && cp -r .continue/* ~/.continue/ && cd ./soccer-manager && corepack enable && corepack prepare pnpm@9 --activate && pnpm i",
+  "containerEnv": {
+    "OPENAI_API_BASE": "http://host.docker.internal:1234/v1",
+    "OPENAI_API_KEY": "lm-studio"
+  },
+  "runArgs": [
+    "--add-host=host.docker.internal:host-gateway"
+  ],
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {}
+  },
+  "forwardPorts": [
+    1234,
+    3000,
+    5173
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "Continue.continue",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "streetsidesoftware.code-spell-checker"
+      ]
+    }
+  }
+}
