@@ -19,5 +19,20 @@ export default tseslint.config([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
+      'no-restricted-syntax': [
+        'warn',
+        {
+          selector: 'CallExpression[callee.name="setState"]',
+          message: 'Avoid calling setState directly; use state setters from hooks and avoid calling them in render.'
+        },
+        {
+          selector: 'CallExpression[callee.name=/^set[A-Z].*/]:not(:has(ThisExpression))',
+          message: 'Avoid calling setState-like setters inside render/useMemo/useCallback bodies; move to useEffect with guards.'
+        }
+      ]
+    }
   },
 ])

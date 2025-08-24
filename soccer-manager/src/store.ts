@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import type { MatchState, Player, SubEvent, TacticsSlot } from './types'
+import { uid } from './utils/uid'
 
 const DEFAULT_TACTICS: TacticsSlot[] = [
   // simple 4-3-3 layout on a 100% pitch
@@ -57,7 +58,7 @@ export const useAppStore = create<AppStore>()(
       ...initialState,
 
       addPlayer: (p) => set((s) => {
-        const id = p.id ?? crypto.randomUUID()
+        const id = p.id ?? uid()
         const player: Player = {
           id,
           name: p.name,
@@ -123,7 +124,7 @@ export const useAppStore = create<AppStore>()(
           roster = roster.map(pl => pl.id === inId ? { ...pl, isOnField: false } : pl)
         }
 
-        const sub: SubEvent = { id: crypto.randomUUID(), timestampMs: now, playerInId: inId, playerOutId: outId, note }
+        const sub: SubEvent = { id: uid(), timestampMs: now, playerInId: inId, playerOutId: outId, note }
         return {
           roster,
           subs: [...s.subs, sub],

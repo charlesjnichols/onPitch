@@ -8,7 +8,10 @@
 
 /* Base dark theme body */
 html, body, #root { height: 100%; }
-body { @apply bg-neutral-950 text-neutral-100 antialiased; }
+body { @apply bg-neutral-950 text-neutral-100 antialiased; padding-bottom: env(safe-area-inset-bottom); }
+
+/* Touch optimizations */
+button { touch-action: manipulation; }
 
 /* Utility helpers */
 .container { @apply mx-auto px-4; }
