@@ -258,6 +258,11 @@ export default function PointerTacticsBoard() {
             const eligibleTags = getEligibleTagsForSlot(slot.id)
             return (
               <div key={slot.id} className="absolute" style={{ left: `${slot.x * 100}%`, top: `${slot.y * 100}%` }}>
+                {!player && eligibleTags.length > 0 && (
+                  <div className="absolute left-1/2 -translate-x-1/2 -translate-y-full mb-1 text-[10px] text-neutral-400 whitespace-nowrap">
+                    {eligibleTags.join('/')}
+                  </div>
+                )}
                 <div
                   role="button"
                   tabIndex={0}
@@ -275,14 +280,6 @@ export default function PointerTacticsBoard() {
                     {slot.id.toUpperCase()}
                   </div>
                 </div>
-                {!player && eligibleTags.length > 0 && (() => {
-                  const labelClass = slot.x < 0.25 ? 'left-0 translate-x-0 text-left' : (slot.x > 0.75 ? 'right-0 translate-x-0 text-right' : 'left-1/2 -translate-x-1/2 text-center')
-                  return (
-                    <div className={`absolute ${labelClass} mt-1 text-[10px] text-neutral-400 max-w-[140px] break-words`} style={{ top: 'calc(50% + 28px)' }}>
-                      Eligible: {eligibleTags.join('/')}
-                    </div>
-                  )
-                })()}
               </div>
             )
           })}
@@ -290,6 +287,19 @@ export default function PointerTacticsBoard() {
       </div>
       <div>
         <div className="mb-2 text-sm text-neutral-300">Bench{selectedSlotId ? ` — Eligible for ${selectedSlotId.toUpperCase()}` : ''}</div>
+        <div className="mb-2 flex items-center gap-2">
+          <label className="text-xs text-neutral-400">Filter</label>
+          <select
+            className="bg-neutral-800/60 rounded px-2 py-1 text-sm"
+            value={selectedSlotId ? getEligibleTagsForSlot(selectedSlotId)[0] ?? '' : ''}
+            onChange={() => { /* noop: filter is driven by slot selection; this is a display hint */ }}
+          >
+            <option value="">All</option>
+            {selectedSlotId && getEligibleTagsForSlot(selectedSlotId).map(tag => (
+              <option key={tag} value={tag}>{tag}</option>
+            ))}
+          </select>
+        </div>
         <div ref={benchRef} className="grid gap-2">
           {eligibleBenchForSelected.length === 0 && <div className="text-xs text-neutral-500">No bench players</div>}
           {eligibleBenchForSelected.map(p => (

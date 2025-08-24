@@ -1,5 +1,7 @@
 import type { PositionTag, Player } from '../types'
 
+export const ALL_POSITIONS: PositionTag[] = ['GK','LB','CB','RB','LWB','RWB','CDM','CM','CAM','LW','RW','CF','ST']
+
 // Map the tactics slot id to acceptable position tags
 export const SLOT_ELIGIBLE_TAGS: Record<string, PositionTag[]> = {
 	gk: ['GK'],
