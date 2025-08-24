@@ -274,11 +274,14 @@ export default function PointerTacticsBoard() {
                   <div className={`w-12 h-12 rounded-full border flex items-center justify-center text-xs ${player ? 'bg-emerald-700/30 border-emerald-600' : 'bg-neutral-800/80 border-neutral-700'}`}>
                     {slot.id.toUpperCase()}
                   </div>
-                  {!player && eligibleTags.length > 0 && (
-                    <div className="absolute left-1/2 -translate-x-1/2 top-12 mt-1 text-[10px] text-neutral-400 whitespace-nowrap">
-                      Eligible: {eligibleTags.join('/')}
-                    </div>
-                  )}
+                  {!player && eligibleTags.length > 0 && (() => {
+                    const labelClass = slot.x < 0.15 ? 'left-0 translate-x-0 text-left' : (slot.x > 0.85 ? 'right-0 translate-x-0 text-right' : 'left-1/2 -translate-x-1/2 text-center')
+                    return (
+                      <div className={`absolute ${labelClass} top-12 mt-1 text-[10px] text-neutral-400 whitespace-nowrap`}>
+                        Eligible: {eligibleTags.join('/')}
+                      </div>
+                    )
+                  })() }
                 </div>
               </div>
             )
