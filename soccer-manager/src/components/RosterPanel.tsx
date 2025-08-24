@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { useAppStore } from '../store'
 import type { PositionTag, Player } from '../types'
-
-const ALL_POSITIONS: PositionTag[] = ['GK','LB','CB','RB','LWB','RWB','CDM','CM','CAM','LW','RW','CF','ST']
+import { ALL_POSITIONS } from '../utils/positions'
 
 function PlayerRow({ player }: { player: Player }) {
   const updatePlayer = useAppStore(s => s.updatePlayer)
