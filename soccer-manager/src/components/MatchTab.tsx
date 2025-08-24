@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import ClockPanel from './ClockPanel'
 import { useAppStore } from '../store'
 import { formatClock } from '../utils/time'
@@ -7,9 +7,17 @@ import SubSheet from './SubSheet'
 export default function MatchTab() {
   const roster = useAppStore(s => s.roster)
   const getLiveMinutesMs = useAppStore(s => s.getLiveMinutesMs)
+  const isRunning = useAppStore(s => s.clock.isRunning)
 
   const [sheetOpen, setSheetOpen] = useState(false)
   const [benchId, setBenchId] = useState<string | undefined>(undefined)
+
+  const [tick, setTick] = useState(0)
+  useEffect(() => {
+    if (!isRunning) return
+    const id = setInterval(() => setTick(t => t + 1), 500)
+    return () => clearInterval(id)
+  }, [isRunning])
 
   const stats = useMemo(() => {
     const msList = roster.map(p => getLiveMinutesMs(p.id))
@@ -18,7 +26,7 @@ export default function MatchTab() {
     const onField = withMs.filter(p => p.isOnField).sort((a, b) => b.ms - a.ms)
     const bench = withMs.filter(p => !p.isOnField).sort((a, b) => a.ms - b.ms)
     return { avg, onField, bench }
-  }, [roster, getLiveMinutesMs])
+  }, [roster, getLiveMinutesMs, tick])
 
   const openSheet = (id: string) => { setBenchId(id); setSheetOpen(true) }
 
