@@ -276,9 +276,9 @@ export default function PointerTacticsBoard() {
                   </div>
                 </div>
                 {!player && eligibleTags.length > 0 && (() => {
-                  const labelClass = slot.x < 0.15 ? 'left-0 translate-x-0 text-left' : (slot.x > 0.85 ? 'right-0 translate-x-0 text-right' : 'left-1/2 -translate-x-1/2 text-center')
+                  const labelClass = slot.x < 0.25 ? 'left-0 translate-x-0 text-left' : (slot.x > 0.75 ? 'right-0 translate-x-0 text-right' : 'left-1/2 -translate-x-1/2 text-center')
                   return (
-                    <div className={`absolute ${labelClass} mt-1 text-[10px] text-neutral-400 whitespace-nowrap`} style={{ top: 'calc(50% + 28px)' }}>
+                    <div className={`absolute ${labelClass} mt-1 text-[10px] text-neutral-400 max-w-[140px] break-words`} style={{ top: 'calc(50% + 28px)' }}>
                       Eligible: {eligibleTags.join('/')}
                     </div>
                   )
