@@ -7,7 +7,7 @@ models:
   - name: Qwen2.5-Coder 7B (LM Studio)
     provider: lmstudio
     model: qwen2.5-coder-7b-instruct
-    apiBase: http://host.docker.internal:9999/v1
+    apiBase: http://host.docker.internal:1234/v1
     roles: [chat, edit, apply, autocomplete]
     # Ensure Agent Mode tool-calls are enabled (LM Studio is OpenAI-compatible, but we make it explicit)
     capabilities: [tool_use]
@@ -16,14 +16,14 @@ models:
   - name: Llama 3.1 8B (LM Studio)
     provider: lmstudio
     model: meta-llama-3.1-8b-instruct
-    apiBase: http://host.docker.internal:9999/v1
+    apiBase: http://host.docker.internal:1234/v1
     roles: [chat, edit]
 
   # Embeddings for @codebase search (LM Studio supports an embeddings endpoint)
   - name: Nomic Embed (LM Studio)
     provider: lmstudio
     model: nomic-ai/nomic-embed-text-v1.5-GGUF
-    apiBase: http://host.docker.internal:9999/v1
+    apiBase: http://host.docker.internal:1234/v1
     roles: [embed]
 
 context:
