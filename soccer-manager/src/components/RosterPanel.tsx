@@ -1,86 +1,98 @@
-import { useState } from 'react'
-import { useAppStore } from '../store'
-import type { PositionTag, Player } from '../types'
-import { ALL_POSITIONS } from '../utils/positions'
+import React from 'react';
+import { Box, Button, MenuItem, Select, TextField, styled, Typography, IconButton } from '@mui/material';
+import { Delete } from '@mui/icons-material';
+import { useState } from 'react';
+import { useAppStore } from '../store';
+import type { Player } from '../types';
+import { ALL_POSITIONS } from '../utils/positions';
 
-function PlayerRow({ player }: { player: Player }) {
-  const updatePlayer = useAppStore(s => s.updatePlayer)
-  const removePlayer = useAppStore(s => s.removePlayer)
-  const toggleStarter = useAppStore(s => s.toggleStarter)
+const StyledTextField = styled(TextField)(({ theme }) => ({
+  backgroundColor: theme.palette.background.paper,
+  borderRadius: 4,
+}));
 
-  return (
-    <div className="flex items-center justify-between gap-3 rounded-lg border border-neutral-800 bg-neutral-900/60 p-3">
-      <div className="flex items-center gap-3">
-        <input
-          className="w-14 bg-neutral-800/60 rounded px-2 py-1 text-sm"
-          placeholder="#"
-          value={player.number ?? ''}
-          onChange={(e) => updatePlayer(player.id, { number: Number(e.target.value || 0) || undefined })}
-        />
-        <input
-          className="w-40 bg-neutral-800/60 rounded px-2 py-1 text-sm"
-          placeholder="Name"
-          value={player.name}
-          onChange={(e) => updatePlayer(player.id, { name: e.target.value })}
-        />
-        <select
-          multiple
-          className="bg-neutral-800/60 rounded px-2 py-1 text-sm"
-          value={player.positionTags}
-          onChange={(e) => {
-            const opts = Array.from(e.target.selectedOptions).map(o => o.value as PositionTag)
-            updatePlayer(player.id, { positionTags: opts })
-          }}
-        >
-          {ALL_POSITIONS.map(p => (
-            <option key={p} value={p}>{p}</option>
-          ))}
-        </select>
-      </div>
-      <div className="flex items-center gap-2">
-        <button
-          className={`text-xs px-2 py-1 rounded border ${player.isOnField ? 'bg-emerald-600/20 border-emerald-600' : 'bg-neutral-800 border-neutral-700'}`}
-          onClick={() => toggleStarter(player.id, !player.isOnField)}
-        >{player.isOnField ? 'On Field' : 'Bench'}</button>
-<button className="enhanced-button text-text-primary" onClick={() => removePlayer(player.id)}>Remove</button>
+function RosterPanel() {
+  const roster = useAppStore(s => s.roster);
+  const addPlayer = useAppStore(s => s.addPlayer);
+  const [name, setName] = useState('');
 
-      </div>
-    </div>
-  )
-}
-
-export default function RosterPanel() {
-  const roster = useAppStore(s => s.roster)
-  const addPlayer = useAppStore(s => s.addPlayer)
-  const [name, setName] = useState('')
+  const handleAddPlayer = () => {
+            if (!name.trim()) return;
+            addPlayer({ name: name.trim(), positionTags: [], isOnField: false });
+            setName('');
+  };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <input
-          className="flex-1 bg-neutral-800/60 rounded px-3 py-2 text-sm"
+    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', maxWidth: 600 }}>
+      <Box sx={{ display: 'flex', gap: 2, mb: 3, width: '100%', maxWidth: 600 }}>
+        <StyledTextField
+          fullWidth
           placeholder="Add player name"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
-        <button
-          className="px-3 py-2 text-sm rounded border border-neutral-700 bg-neutral-800"
-          onClick={() => {
-            if (!name.trim()) return
-            addPlayer({ name: name.trim(), positionTags: [], isOnField: false })
-            setName('')
-          }}
-        >Add</button>
-      </div>
+        <Button variant="contained" color="primary" onClick={handleAddPlayer}>
+          Add
+        </Button>
+      </Box>
 
-      <div className="grid gap-2">
-        {roster.length === 0 && (
-          <div className="text-sm text-neutral-400">No players yet. Add some to build your roster.</div>
+      <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+        {roster.length === 0 ? (
+          <Box>No players yet. Add some to build your roster.</Box>
+        ) : (
+          roster.map((p) => (
+            <PlayerRow key={p.id} player={p} />
+          ))
         )}
-        {roster.map(p => (
-          <PlayerRow key={p.id} player={p} />
-        ))}
-      </div>
-    </div>
-  )
+      </Box>
+      </Box>
+  );
 }
+
+const PlayerRow: React.FC<{ player: Player }> = ({ player }) => {
+  const updatePlayer = useAppStore(s => s.updatePlayer);
+  const removePlayer = useAppStore(s => s.removePlayer);
+
+  const handleChange = (event: any) => { // event: SelectChangeEvent<typeof player.positionTags>
+    const { value } = event.target;
+    updatePlayer(player.id, { positionTags: value });
+};
+
+  const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Allow only numbers and limit to a maximum of two digits
+    const number = value.replace(/[^0-9]/g, '').slice(0, 2);
+    updatePlayer(player.id, { number: Number(number) || undefined });
+};
+
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, p: 2, bgcolor: 'background.paper', borderRadius: 2, border: '1px solid rgba(255, 255, 255, 0.12)', mb: 1 }}>
+      <TextField
+        sx={{ width: 50 }}
+        placeholder="#"
+        value={player.number ?? ''}
+        onChange={handleNumberChange}
+        inputProps={{ maxLength: 2 }} // Limit input to 2 characters (numbers)
+      />
+      <Typography variant="subtitle1" fontWeight="bold" sx={{ flexGrow: 1, textAlign: 'center' }}>{player.name}</Typography>
+      <Select
+        multiple
+        value={player.positionTags}
+        onChange={handleChange}
+        sx={{ width: 120, minWidth: 120 }}
+      >
+        {ALL_POSITIONS.map((p) => (
+          <MenuItem key={p} value={p}>
+            {p}
+          </MenuItem>
+        ))}
+      </Select>
+      <IconButton aria-label="delete player" onClick={() => removePlayer(player.id)}>
+        <Delete />
+      </IconButton>
+    </Box>
+  );
+};
+
+export default RosterPanel;
+

@@ -3,6 +3,19 @@ import Papa from 'papaparse'
 import RosterPanel from './RosterPanel'
 import { useAppStore } from '../store'
 import { formatClock } from '../utils/time'
+import { Box, Button, styled } from '@mui/material'
+
+const VisuallyHiddenInput = styled('input')({
+  clip: 'rect(0 0 0 0)',
+  clipPath: 'inset(50%) !important',
+  height: 1,
+  overflow: 'hidden',
+  position: 'absolute',
+  bottom: 0,
+  left: 0,
+  whiteSpace: 'nowrap',
+  width: 1,
+});
 
 export default function RosterTab({ onSendToLineup }: { onSendToLineup?: () => void }) {
   const roster = useAppStore(s => s.roster)
@@ -68,16 +81,25 @@ export default function RosterTab({ onSendToLineup }: { onSendToLineup?: () => v
   }
 
   return (
-    <div className="grid gap-4">
-      <div className="flex items-center justify-between">
-        <div className="flex gap-2">
-          <button className="px-3 py-2 rounded border border-neutral-700 bg-neutral-800 text-sm" onClick={exportRosterCsv}>Export CSV</button>
-          <input ref={fileRef} type="file" accept=".csv" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) onImport(f); if (fileRef.current) fileRef.current.value = '' }} />
-          <button className="px-3 py-2 rounded border border-neutral-700 bg-neutral-800 text-sm" onClick={() => fileRef.current?.click()}>Import CSV</button>
-        </div>
-        <button disabled={!canSend} className="px-3 py-2 rounded border border-emerald-700 bg-emerald-700/20 text-sm disabled:opacity-50" onClick={sendToLineup}>Send to Lineup</button>
-      </div>
+    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, width: '90%', maxWidth: 600, mx: 'auto' }}>
+      <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', mt: 2 }}>
+          <Button variant="contained" color="primary" onClick={() => fileRef.current?.click()}>Import CSV</Button>
+          <Button variant="contained" color="primary" onClick={exportRosterCsv}>Export CSV</Button>
+
+          <VisuallyHiddenInput
+            type="file"
+            accept=".csv"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) onImport(f);
+              if (fileRef.current) fileRef.current.value = '';
+            }}
+            ref={fileRef}
+          />
+
+        <Button disabled={!canSend} variant="contained" color="secondary" onClick={sendToLineup}>Send to Lineup</Button>
+      </Box>
       <RosterPanel />
-    </div>
+    </Box>
   )
 }
