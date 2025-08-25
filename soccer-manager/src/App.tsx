@@ -32,7 +32,7 @@ function App() {
   );
   const [tab, setTab] = useState<number>(0);
 
-  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTab(newValue);
   };
 
@@ -51,7 +51,7 @@ function App() {
         </Box>
         <Box sx={{ maxWidth: '1280px', margin: '0 auto', py: `${6}px`, spacing: 6 }}>
           {tab === 0 && (
-            <RosterTab onSendToLineup={() => handleChange(new Event(''), 1)} />
+            <RosterTab />
           )}
           {tab === 1 && (
             <LineupTab />

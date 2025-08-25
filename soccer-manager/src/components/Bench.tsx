@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
-import { Box, Card, CardContent, Select, MenuItem, Typography } from '@mui/material';
+import { Box, Card, CardContent, Typography } from '@mui/material';
 import { useAppStore } from '../store';
-import { playerEligibleForSlot, getEligibleTagsForSlot } from '../utils/positions';
+import { playerEligibleForSlot } from '../utils/positions';
 
 interface BenchProps {
   selectedSlotId: string | undefined;
@@ -9,7 +9,7 @@ interface BenchProps {
   onLongPressBench: (benchId: string) => void;
 }
 
-function BenchItem({ id, name, number, onLongPress }: { id: string, name: string, number?: number, onLongPress: (benchId: string) => void }) {
+function BenchItem({ name, number }: { id: string, name: string, number?: number, onLongPress: (benchId: string) => void }) {
   return (
     <Card
       sx={{

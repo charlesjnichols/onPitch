@@ -1,9 +1,9 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
-import type { MatchState, Player, SubEvent, TacticsSlot, FormationId } from './types'
+import type { MatchState, Player, SubEvent, TacticsSlot } from './types'
 import { uid } from './utils/uid'
 
-export const FORMATION_LAYOUTS: Record<FormationId, Record<string, { x: number, y: number }>> = {
+const formationLayouts = {
   '4-3-3': {
     gk: { x: 0.08, y: 0.50 },
     lb: { x: 0.25, y: 0.20 },
@@ -58,6 +58,10 @@ export const FORMATION_LAYOUTS: Record<FormationId, Record<string, { x: number, 
   },
 }
 
+export type FormationId = keyof typeof formationLayouts;
+
+export const FORMATION_LAYOUTS = formationLayouts as Record<FormationId, Record<string, { x: number, y: number }>>;
+
 // this function creates the initial tactics array based on the formation
 const createTacticsForFormation = (formation: FormationId): TacticsSlot[] => {
   const layout = FORMATION_LAYOUTS[formation];
@@ -89,19 +93,19 @@ export interface AppStore extends MatchState {
 
   // tactics
   assignPlayerToSlot: (slotId: string, playerId?: string) => void
-  moveSlot: (slotId, x: number, y: number) => void
-  swapSlotPlayers: (slotAId: string, slotBId) => void
+  moveSlot: (slotId: string, x: number, y: number) => void
+  swapSlotPlayers: (slotAId: string, slotBId: string) => void
   benchPlayer: (playerId: string) => void
 
   // formation + wrappers
   setFormation: (formation: FormationId) => void
-  placePlayerInSlot: (slotId, playerId) => void
-  benchPlayerFromSlot: (slotId) => void
-  swapSlots: (slotAId, slotBId) => void
-  subBenchForSlot: (benchPlayerId, slotId) => void
+  placePlayerInSlot: (slotId: string, playerId: string) => void
+  benchPlayerFromSlot: (slotId: string) => void
+  swapSlots: (slotAId: string, slotBId: string) => void
+  subBenchForSlot: (benchPlayerId: string, slotId: string) => void
 
   // helpers
-  getLiveMinutesMs: (playerId) => number
+  getLiveMinutesMs: (playerId: string) => number
   resetForNewGame: () => void
 }
 
@@ -238,7 +242,7 @@ export const useAppStore = create<AppStore>()(
         tactics: s.tactics.map(slot => slot.playerId === playerId ? { ...slot, playerId: undefined } : slot)
       })),
 
-      setFormation: (formation) => set((s) => {
+      setFormation: (formation) => set((_s) => {
         const tactics = createTacticsForFormation(formation);
         return { formation, tactics };
       }),
@@ -276,7 +280,8 @@ export const useAppStore = create<AppStore>()(
           const slot = s.tactics.find(t => t.id === slotId);
           if (!slot?.playerId) return s;
           const playerId = slot.playerId;
-          return get().benchPlayer(playerId); // Use the benchPlayer action
+          get().benchPlayer(playerId);
+          return get();
         });
       },
 

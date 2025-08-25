@@ -3,7 +3,7 @@ import ClockPanel from './ClockPanel';
 import { useAppStore } from '../store';
 import { formatClock } from '../utils/time';
 import SubSheet from './SubSheet';
-import { Box, Typography, Button, IconButton } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 
 export default function MatchTab() {
   const roster = useAppStore(s => s.roster);

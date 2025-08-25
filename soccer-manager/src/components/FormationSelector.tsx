@@ -1,12 +1,13 @@
 import { Box, Select, MenuItem, Typography } from '@mui/material';
-import { useAppStore, FORMATION_LAYOUTS } from '../store';
+import { useAppStore, FORMATION_LAYOUTS, type FormationId } from '../store';
+import type { SelectChangeEvent } from '@mui/material'; // Import SelectChangeEvent
 
 export default function FormationSelector() {
   const formation = useAppStore(s => s.formation);
   const setFormation = useAppStore(s => s.setFormation);
 
-  const handleFormationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setFormation(e.target.value as any);
+  const handleFormationChange = (e: SelectChangeEvent<FormationId>) => {
+    setFormation(e.target.value as FormationId);
   };
 
   return (

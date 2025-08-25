@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Box, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
 
 export default function BottomSheet({ open, onClose, children, title }: { open: boolean, onClose: () => void, children: React.ReactNode, title?: string }) {
   useEffect(() => {
