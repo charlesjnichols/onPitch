@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./styles/dark-theme.css";
 
 @plugin "tailwindcss-animate";
 
@@ -7,11 +8,79 @@
 }
 
 /* Base dark theme body */
-html, body, #root { height: 100%; }
-body { @apply bg-neutral-950 text-neutral-100 antialiased; padding-bottom: env(safe-area-inset-bottom); }
+html, body, #root { 
+  height: 100%; 
+  background: linear-gradient(135deg, var(--color-surface-100) 0%, var(--color-surface-200) 100%);
+}
+
+body { 
+  @apply text-text-primary antialiased; 
+  padding-bottom: env(safe-area-inset-bottom);
+  font-family: var(--font-sans);
+}
+
+/* Enhanced dark theme classes */
+.dark-theme {
+  color-scheme: dark;
+}
 
 /* Touch optimizations */
-button { touch-action: manipulation; }
+button { 
+  touch-action: manipulation; 
+  @apply transition-all duration-200;
+}
 
 /* Utility helpers */
-.container { @apply mx-auto px-4; }
+.container { 
+  @apply mx-auto px-4; 
+}
+
+/* Custom scrollbar for dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-surface-300;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-surface-400 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-primary;
+}
+
+/* Selection colors */
+::selection {
+  @apply bg-primary/30;
+}
+
+/* Focus styles for accessibility */
+.focus-visible {
+  @apply outline-2 outline-primary outline-offset-2;
+}
+
+/* Loading states */
+.loading {
+  @apply animate-pulse bg-surface-300;
+}
+
+/* Enhanced transitions */
+.enhanced-transition {
+  @apply transition-all duration-300 ease-in-out;
+}
+
+/* Glass morphism effect */
+.glass {
+  @apply bg-surface-200/80 backdrop-blur-md border border-surface-400/50;
+}
+
+/* Soccer field pattern background */
+.field-pattern {
+  background-image: 
+    radial-gradient(circle at 25% 25%, rgba(16, 185, 129, 0.1) 2px, transparent 2px),
+    radial-gradient(circle at 75% 75%, rgba(16, 185, 129, 0.1) 2px, transparent 2px);
+  background-size: 30px 30px;
+}

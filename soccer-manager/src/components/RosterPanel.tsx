@@ -42,7 +42,8 @@ function PlayerRow({ player }: { player: Player }) {
           className={`text-xs px-2 py-1 rounded border ${player.isOnField ? 'bg-emerald-600/20 border-emerald-600' : 'bg-neutral-800 border-neutral-700'}`}
           onClick={() => toggleStarter(player.id, !player.isOnField)}
         >{player.isOnField ? 'On Field' : 'Bench'}</button>
-        <button className="text-xs px-2 py-1 rounded border border-red-700 bg-red-700/20" onClick={() => removePlayer(player.id)}>Remove</button>
+<button className="enhanced-button text-text-primary" onClick={() => removePlayer(player.id)}>Remove</button>
+
       </div>
     </div>
   )

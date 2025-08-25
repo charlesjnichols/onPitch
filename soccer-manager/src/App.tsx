@@ -8,18 +8,33 @@ function App() {
   const [tab, setTab] = useState<'roster' | 'lineup' | 'match'>('roster')
 
   return (
-    <div className="min-h-dvh text-neutral-100 pb-[env(safe-area-inset-bottom)]">
-      <header className="border-b border-neutral-800 sticky top-0 bg-neutral-950/80 backdrop-blur z-10 pt-[env(safe-area-inset-top)]">
-        <div className="container h-14 flex items-center justify-between">
-          <h1 className="text-lg font-semibold">Soccer Manager</h1>
-          <nav className="flex gap-2 text-sm">
-            <button className={`px-3 py-1.5 rounded ${tab==='roster' ? 'bg-neutral-800 border border-neutral-700' : 'text-neutral-300'}`} onClick={() => setTab('roster')}>Roster</button>
-            <button className={`px-3 py-1.5 rounded ${tab==='lineup' ? 'bg-neutral-800 border border-neutral-700' : 'text-neutral-300'}`} onClick={() => setTab('lineup')}>Lineup</button>
-            <button className={`px-3 py-1.5 rounded ${tab==='match' ? 'bg-neutral-800 border border-neutral-700' : 'text-neutral-300'}`} onClick={() => setTab('match')}>Match</button>
+    <div className="min-h-dvh dark-theme pb-[env(safe-area-inset-bottom)] field-pattern">
+      <header className="glass border-b border-surface-400 sticky top-0 z-10 pt-[env(safe-area-inset-top)]">
+        <div className="container h-16 flex items-center justify-between">
+          <h1 className="text-xl font-bold text-primary">⚽ Soccer Manager</h1>
+          <nav className="flex gap-1 p-1 bg-surface-300 rounded-lg tab-navigation">
+            <button 
+              className={`tab-button px-4 py-2 ${tab==='roster' ? 'active' : ''}`} 
+              onClick={() => setTab('roster')}
+            >
+              Roster
+            </button>
+            <button 
+              className={`tab-button px-4 py-2 ${tab==='lineup' ? 'active' : ''}`} 
+              onClick={() => setTab('lineup')}
+            >
+              Lineup
+            </button>
+            <button 
+              className={`tab-button px-4 py-2 ${tab==='match' ? 'active' : ''}`} 
+              onClick={() => setTab('match')}
+            >
+              Match
+            </button>
           </nav>
         </div>
       </header>
-      <main className="container py-6">
+      <main className="container py-6 space-y-6">
         {tab === 'roster' && (
           <RosterTab onSendToLineup={() => setTab('lineup')} />
         )}
