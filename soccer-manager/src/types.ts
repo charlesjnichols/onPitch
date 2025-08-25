@@ -1,3 +1,5 @@
+import { FORMATION_LAYOUTS } from "./store";
+
 export type PositionTag =
   | 'GK' | 'LB' | 'RB' | 'CB' | 'LWB' | 'RWB'
   | 'CDM' | 'CM' | 'CAM'
@@ -40,7 +42,7 @@ export interface TacticsSlot {
   playerId?: string;
 }
 
-export type FormationId = '4-4-2' | '4-3-3' | '3-5-2'
+export type FormationId = keyof typeof FORMATION_LAYOUTS
 
 export interface MatchState {
   roster: Player[];

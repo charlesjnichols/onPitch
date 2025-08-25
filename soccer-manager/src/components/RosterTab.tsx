@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react'
+import { useRef } from 'react'
 import Papa from 'papaparse'
 import RosterPanel from './RosterPanel'
 import { useAppStore } from '../store'
@@ -17,9 +17,8 @@ const VisuallyHiddenInput = styled('input')({
   width: 1,
 });
 
-export default function RosterTab({ onSendToLineup }: { onSendToLineup?: () => void }) {
+export default function RosterTab() {
   const roster = useAppStore(s => s.roster)
-  const updatePlayer = useAppStore(s => s.updatePlayer)
   const addPlayer = useAppStore(s => s.addPlayer)
   const getLiveMinutesMs = useAppStore(s => s.getLiveMinutesMs)
 
@@ -65,21 +64,6 @@ export default function RosterTab({ onSendToLineup }: { onSendToLineup?: () => v
     })
   }
 
-  const canSend = useMemo(() => roster.length > 0, [roster.length])
-
-  const sendToLineup = () => {
-    // Ensure at most 11 on-field: pick first 11 currently marked on field, otherwise fill by least minutes
-    const withMs = roster.map(p => ({ p, ms: getLiveMinutesMs(p.id) }))
-    const desired = withMs.filter(x => x.p.isOnField).map(x => x.p)
-    const remaining = withMs.filter(x => !x.p.isOnField).sort((a, b) => a.ms - b.ms).map(x => x.p)
-    const target = [...desired, ...remaining].slice(0, 11)
-    const targetIds = new Set(target.map(p => p.id))
-    for (const pl of roster) {
-      updatePlayer(pl.id, { isOnField: targetIds.has(pl.id) })
-    }
-    onSendToLineup?.()
-  }
-
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, width: '90%', maxWidth: 600, mx: 'auto' }}>
       <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', mt: 2 }}>
@@ -96,8 +80,6 @@ export default function RosterTab({ onSendToLineup }: { onSendToLineup?: () => v
             }}
             ref={fileRef}
           />
-
-        <Button disabled={!canSend} variant="contained" color="secondary" onClick={sendToLineup}>Send to Lineup</Button>
       </Box>
       <RosterPanel />
     </Box>

@@ -3,31 +3,16 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 import type { MatchState, Player, SubEvent, TacticsSlot, FormationId } from './types'
 import { uid } from './utils/uid'
 
-const DEFAULT_TACTICS: TacticsSlot[] = [
-  // simple 4-3-3 layout on a 100% pitch
-  { id: 'gk', x: 0.08, y: 0.5 },
-  { id: 'lb', x: 0.25, y: 0.2 },
-  { id: 'lcb', x: 0.25, y: 0.4 },
-  { id: 'rcb', x: 0.25, y: 0.6 },
-  { id: 'rb', x: 0.25, y: 0.8 },
-  { id: 'lcm', x: 0.5, y: 0.3 },
-  { id: 'cm', x: 0.5, y: 0.5 },
-  { id: 'rcm', x: 0.5, y: 0.7 },
-  { id: 'lw', x: 0.78, y: 0.25 },
-  { id: 'st', x: 0.82, y: 0.5 },
-  { id: 'rw', x: 0.78, y: 0.75 },
-]
-
-const FORMATION_LAYOUTS: Record<FormationId, Record<string, { x: number, y: number }>> = {
+export const FORMATION_LAYOUTS: Record<FormationId, Record<string, { x: number, y: number }>> = {
   '4-3-3': {
     gk: { x: 0.08, y: 0.50 },
     lb: { x: 0.25, y: 0.20 },
     lcb: { x: 0.25, y: 0.40 },
     rcb: { x: 0.25, y: 0.60 },
     rb: { x: 0.25, y: 0.80 },
-    lcm: { x: 0.50, y: 0.30 },
+    lcm: { x: 0.50, y: 0.20 },
     cm: { x: 0.50, y: 0.50 },
-    rcm: { x: 0.50, y: 0.70 },
+    rcm: { x: 0.50, y: 0.80 },
     lw: { x: 0.78, y: 0.25 },
     st: { x: 0.82, y: 0.50 },
     rw: { x: 0.78, y: 0.75 },
@@ -38,12 +23,12 @@ const FORMATION_LAYOUTS: Record<FormationId, Record<string, { x: number, y: numb
     lcb: { x: 0.25, y: 0.40 },
     rcb: { x: 0.25, y: 0.60 },
     rb: { x: 0.25, y: 0.80 },
-    lcm: { x: 0.52, y: 0.28 }, // LM approx
-    cm: { x: 0.52, y: 0.50 },  // CM
-    rcm: { x: 0.52, y: 0.72 }, // RM approx
-    lw: { x: 0.75, y: 0.35 },  // LF
-    st: { x: 0.80, y: 0.50 },  // CF
-    rw: { x: 0.75, y: 0.65 },  // RF
+    lm: { x: 0.50, y: 0.20 },
+    cm1: { x: 0.50, y: 0.40 },
+    cm2: { x: 0.50, y: 0.60 },
+    rm: { x: 0.50, y: 0.80 },
+    st1: { x: 0.75, y: 0.35 },
+    st2: { x: 0.75, y: 0.65 },
   },
   '3-5-2': {
     gk: { x: 0.08, y: 0.50 },
@@ -58,7 +43,34 @@ const FORMATION_LAYOUTS: Record<FormationId, Record<string, { x: number, y: numb
     st: { x: 0.78, y: 0.50 },  // ST2
     rw: { x: 0.70, y: 0.65 },  // ST1 mirror
   },
+  '4-4-2 (Diamond)': {
+    gk: { x: 0.08, y: 0.50 },
+    lb: { x: 0.25, y: 0.20 },
+    lcb: { x: 0.25, y: 0.40 },
+    rcb: { x: 0.25, y: 0.60 },
+    rb: { x: 0.25, y: 0.80 },
+    cdm: { x: 0.45, y: 0.50 },
+    lm: { x: 0.55, y: 0.20 },
+    rm: { x: 0.55, y: 0.80 },
+    cam: { x: 0.65, y: 0.50 },
+    st1: { x: 0.80, y: 0.35 },
+    st2: { x: 0.80, y: 0.65 },
+  },
 }
+
+// this function creates the initial tactics array based on the formation
+const createTacticsForFormation = (formation: FormationId): TacticsSlot[] => {
+  const layout = FORMATION_LAYOUTS[formation];
+  if (!layout) return [];
+
+  return Object.entries(layout).map(([id, pos]) => ({
+    id,
+    x: pos.x,
+    y: pos.y,
+    playerId: undefined,
+  }));
+};
+
 
 export interface AppStore extends MatchState {
   // roster
@@ -77,29 +89,29 @@ export interface AppStore extends MatchState {
 
   // tactics
   assignPlayerToSlot: (slotId: string, playerId?: string) => void
-  moveSlot: (slotId: string, x: number, y: number) => void
-  swapSlotPlayers: (slotAId: string, slotBId: string) => void
+  moveSlot: (slotId, x: number, y: number) => void
+  swapSlotPlayers: (slotAId: string, slotBId) => void
   benchPlayer: (playerId: string) => void
 
   // formation + wrappers
   setFormation: (formation: FormationId) => void
-  placePlayerInSlot: (slotId: string, playerId: string) => void
-  benchPlayerFromSlot: (slotId: string) => void
-  swapSlots: (slotAId: string, slotBId: string) => void
-  subBenchForSlot: (benchPlayerId: string, slotId: string) => void
+  placePlayerInSlot: (slotId, playerId) => void
+  benchPlayerFromSlot: (slotId) => void
+  swapSlots: (slotAId, slotBId) => void
+  subBenchForSlot: (benchPlayerId, slotId) => void
 
   // helpers
-  getLiveMinutesMs: (playerId: string) => number
+  getLiveMinutesMs: (playerId) => number
   resetForNewGame: () => void
 }
 
 const initialState: MatchState = {
   roster: [],
   subs: [],
-  tactics: DEFAULT_TACTICS,
+  tactics: [], // empty array
   formation: '4-3-3',
   clock: { isRunning: false, accumulatedMs: 0 },
-  config: { maxOnField: 11, rotationIntervalMinutes: 6 },
+  config: { maxOnField: 11, rotationIntervalMinutes: 10 },
 }
 
 export const useAppStore = create<AppStore>()(
@@ -130,9 +142,11 @@ export const useAppStore = create<AppStore>()(
       })),
 
       toggleStarter: (id, isOnField) => set((s) => {
-        if (isOnField) {
-          const currentOn = s.roster.filter(p => p.isOnField).length
-          if (currentOn >= s.config.maxOnField) return s
+        const currentOn = s.roster.filter(p => p.isOnField).length
+        if (isOnField && currentOn >= s.config.maxOnField) {
+          // Provide feedback (e.g., using a notification system)
+          console.warn("Cannot add player: Maximum number of players on the field reached.");
+          return s; // or return s, { ...s, error: "Too many players on field" }
         }
         return {
           roster: s.roster.map(pl => pl.id === id ? { ...pl, isOnField } : pl)
@@ -178,6 +192,8 @@ export const useAppStore = create<AppStore>()(
         if (onFieldCount > s.config.maxOnField) {
           // enforce: if too many, revert the last in
           roster = roster.map(pl => pl.id === inId ? { ...pl, isOnField: false } : pl)
+          console.warn("Cannot sub player: Maximum number of players on the field reached.");
+          return s;
         }
 
         const sub: SubEvent = { id: uid(), timestampMs: now, playerInId: inId, playerOutId: outId, note }
@@ -223,12 +239,8 @@ export const useAppStore = create<AppStore>()(
       })),
 
       setFormation: (formation) => set((s) => {
-        const layout = FORMATION_LAYOUTS[formation]
-        const tactics = s.tactics.map(slot => {
-          const pos = layout[slot.id] ?? { x: slot.x, y: slot.y }
-          return { ...slot, x: pos.x, y: pos.y }
-        })
-        return { formation, tactics }
+        const tactics = createTacticsForFormation(formation);
+        return { formation, tactics };
       }),
 
       placePlayerInSlot: (slotId, playerId) => set((s) => {
@@ -251,20 +263,22 @@ export const useAppStore = create<AppStore>()(
         roster = roster.map(pl => pl.id === playerId ? { ...pl, isOnField: true } : pl)
         if (roster.filter(p => p.isOnField).length > s.config.maxOnField) {
           roster = roster.map(pl => pl.id === playerId ? { ...pl, isOnField: false } : pl)
+          console.warn("Cannot place player: Maximum number of players on the field reached.");
+          return s;
         }
         result.roster = roster
-        result.clock = { ...s.clock, startedAtMs: s.clock.isRunning ? now : s.clock.startedAtMs }
+         result.clock = { ...s.clock, startedAtMs: s.clock.isRunning ? now : s.clock.startedAtMs }
         return result
       }),
 
-      benchPlayerFromSlot: (slotId) => set((s) => {
-        const slot = s.tactics.find(t => t.id === slotId)
-        if (!slot?.playerId) return s
-        const playerId = slot.playerId
-        const tactics = s.tactics.map(t => t.id === slotId ? { ...t, playerId: undefined } : t)
-        const roster = s.roster.map(pl => pl.id === playerId ? { ...pl, isOnField: false } : pl)
-        return { tactics, roster }
-      }),
+      benchPlayerFromSlot: (slotId) => {
+        set((s) => {
+          const slot = s.tactics.find(t => t.id === slotId);
+          if (!slot?.playerId) return s;
+          const playerId = slot.playerId;
+          return get().benchPlayer(playerId); // Use the benchPlayer action
+        });
+      },
 
       swapSlots: (slotAId, slotBId) => set((s) => {
         const tactics = s.tactics.map(slot => ({ ...slot }))
@@ -308,10 +322,9 @@ export const useAppStore = create<AppStore>()(
         return base
       },
 
-      resetForNewGame: () => set(() => ({
+      resetForNewGame: () => set((s) => ({
         ...initialState,
-        // keep roster but reset minutes and on-field flags
-        roster: [],
+        roster: s.roster.map(player => ({ ...player, minutesPlayedMs: 0, isOnField: false })),
       })),
     }),
     {
