@@ -1,5 +1,4 @@
 .vscode
-.pnmp-store
 
 # Editor directories and files
 .vscode/*
@@ -11,3 +10,4 @@
 *.njsproj
 *.sln
 *.sw?
+.pnpm-store
