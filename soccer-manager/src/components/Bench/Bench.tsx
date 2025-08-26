@@ -23,41 +23,76 @@ export default function Bench({ selectedSlotId, onBenchClick }: BenchProps) {
 
     const benchPlayers = useMemo(() => sortedBenchPlayers, [sortedBenchPlayers]);
 
-    const eligibleBenchForSelected = useMemo(() => {
+    const preferredBenchPlayers = useMemo(() => {
         if (!selectedSlotId) return benchPlayers;
         return benchPlayers.filter((p: Player) => playerEligibleForSlot(p, selectedSlotId));
     }, [benchPlayers, selectedSlotId]);
 
+   const otherBenchPlayers = useMemo(() => {
+        if (!selectedSlotId) return benchPlayers;
+        return benchPlayers.filter((p: Player) => !playerEligibleForSlot(p, selectedSlotId));
+    }, [benchPlayers, selectedSlotId]);
+
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', maxWidth: 600 }}>
-            <Typography variant="subtitle2" sx={{ mb: 2, fontSize: '0.875rem' }}>Bench{selectedSlotId ? ` — Eligible for ${selectedSlotId.toUpperCase()}` : ''}</Typography>
-            <Box sx={{ display: 'grid', gap: 2, flexDirection: 'column', width: '100%', maxWidth: 600 }}>
-                {eligibleBenchForSelected.length === 0 && <Typography variant="caption" sx={{ fontSize: '0.75rem' }}>No bench players</Typography>}
-                {eligibleBenchForSelected.map((p: Player) => (
-                    <Box
-                        key={p.id}
-                        data-type="bench"
-                        data-id={p.id}
-                        data-label={p.number ? `#${p.number}` : p.name}
-                        aria-label={`Bench — ${p.name}`}
-                        sx={{ '&>*': { pointerEvents: 'none' } }}
-                        onClick={() => {
-                            onBenchClick(p.id)
-                        }}
-                    >
-                        <BenchItem
-                            id={p.id}
-                            name={p.name}
-                            number={p.number}
-                            positionTags={p.positionTags}
-                        />
+            <Typography variant="subtitle1" sx={{ }}>Bench{selectedSlotId ? ` — Eligible for ${selectedSlotId.toUpperCase()}` : ''}</Typography>
+            {selectedSlotId && preferredBenchPlayers.length > 0 && (
+                <>
+                    <Typography variant="subtitle2" sx={{ mt: 2 }}>Preferred</Typography>
+                    <Box sx={{ display: 'grid', gap: 1, flexDirection: 'column', width: '100%', maxWidth: 600 }}>
+                        {preferredBenchPlayers.map((p: Player) => (
+                            <Box
+                                key={p.id}
+                                data-type="bench"
+                                data-id={p.id}
+                                data-label={p.number ? `#${p.number}` : p.name}
+                                aria-label={`Bench — ${p.name}`}
+                                sx={{ '&>*': { pointerEvents: 'none' } }}
+                                onClick={() => {
+                                    onBenchClick(p.id)
+                                }}
+                            >
+                                <BenchItem
+                                    id={p.id}
+                                    name={p.name}
+                                    number={p.number}
+                                    positionTags={p.positionTags}
+                                />
+                            </Box>
+                        ))}
                     </Box>
-                ))}
-            </Box>
-            {selectedSlotId && (
-                <Box sx={{ mt: 3, display: 'grid', gap: 2 }}>
-                    <Typography variant="caption" sx={{ fontSize: '0.75rem' }}>Tap a bench player to assign to {selectedSlotId.toUpperCase()}.</Typography>
-                </Box>
+                </>
+            )}
+            {selectedSlotId && preferredBenchPlayers.length === 0 && (
+                <Typography variant="caption" sx={{ fontSize: '0.75rem', mt: 2 }}>No Preferred Players</Typography>
+            )}
+
+            {otherBenchPlayers.length > 0 && (
+                <>
+                    <Typography variant="subtitle2" sx={{ mt: 2 }}>All Players</Typography>
+                    <Box sx={{ display: 'grid', gap: 1, flexDirection: 'column', width: '100%', maxWidth: 600 }}>
+                        {otherBenchPlayers.map((p: Player) => (
+                            <Box
+                                key={p.id}
+                                data-type="bench"
+                                data-id={p.id}
+                                data-label={p.number ? `#${p.number}` : p.name}
+                                aria-label={`Bench — ${p.name}`}
+                                sx={{ '&>*': { pointerEvents: 'none' } }}
+                                onClick={() => {
+                                    onBenchClick(p.id)
+                                }}
+                            >
+                                <BenchItem
+                                    id={p.id}
+                                    name={p.name}
+                                    number={p.number}
+                                    positionTags={p.positionTags}
+                                />
+                            </Box>
+                        ))}
+                    </Box>
+                </>
             )}
         </Box>
     );

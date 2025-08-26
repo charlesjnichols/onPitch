@@ -21,9 +21,9 @@ export default function ClockPanel() {
   const formattedTime = formatClock(Math.floor(elapsedSec));
 
 
-  const intervalMs = rotationIntervalMinutes * 60
+  const intervalSec = rotationIntervalMinutes * 60
   
-  const showRotation = isRunning && elapsedSec > 1 && (elapsedSec % intervalMs) < 1.5
+    const showRotation = isRunning && elapsedSec > intervalSec && (elapsedSec % intervalSec) < 1.5
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 2, alignItems: 'center' }}>

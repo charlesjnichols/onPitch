@@ -129,14 +129,14 @@ export default function Pitch({
                   "&:focus": {
                     outline: `2px solid ${
                       isSelected
-                        ? "rgba(76, 175, 80, 0.8)"
+                        ? "rgba(255, 0, 0, 0.5)"
                         : "rgba(76, 175, 80, 0.7)"
                     }`,
                     outlineOffset: "2px",
                   },
                   borderRadius: "50%",
                   ...(isSelected
-                    ? { boxShadow: "0 0 0 2px rgba(76, 175, 80, 0.5)" }
+                    ? { boxShadow: "0 0 0 2px rgba(255, 0, 0, 0.5)" }
                     : {}),
                 }}
                 onClick={() =>

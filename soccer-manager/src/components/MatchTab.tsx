@@ -61,7 +61,7 @@ export default function MatchTab() {
                         const slot = tactics.find(t => t.playerId === p.id); // Find the slot
                         const position = slot ? slot.id.toUpperCase() : 'N/A'; // Get position
                         return (
-                            <Box key={p.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, p: 2, bgcolor: 'background.paper', mb: 1 }}>
+                            <Box key={p.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, p: 2, bgcolor: 'background.paper', mb: 1 }}>
                                 <Typography variant="body2">{p.number ? `#${p.number} ` : ''}{p.name}</Typography>
                                 <Stack direction="column" alignItems="flex-end">
                                     <Typography variant="caption" sx={{ fontSize: '0.875rem' }}>{p.ms}</Typography>
