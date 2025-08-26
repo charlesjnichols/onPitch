@@ -139,9 +139,42 @@ export default function Pitch({
                     ? { boxShadow: "0 0 0 2px rgba(255, 0, 0, 0.5)" }
                     : {}),
                 }}
-                onClick={() =>
-                  setSelectedSlotId(isSelected ? undefined : slot.id)
-                }
+                onClick={() => {
+                  if (isSelected) {
+                    setSelectedSlotId(undefined);
+                  } else if (selectedSlotId) {
+                    // Find the selected slot
+                    const selectedSlot = tactics.find((s) => s.id === selectedSlotId);
+
+                    // If both slots have players, swap them
+                    if (selectedSlot?.playerId && slot.playerId) {
+                      // Swap player IDs in the tactics array (you'll need to update your store accordingly)
+                      useAppStore.setState((state) => ({
+                        tactics: state.tactics.map((t) =>
+                          t.id === slot.id
+                            ? { ...t, playerId: selectedSlot.playerId }
+                            : t.id === selectedSlot.id
+                              ? { ...t, playerId: slot.playerId }
+                              : t
+                        ),
+                      }));
+                      setSelectedSlotId(undefined); // Clear selection after swap
+                    } else if (selectedSlot?.playerId && !slot.playerId) {
+                      useAppStore.setState((state) => ({
+                        tactics: state.tactics.map((t) => t.id === slot.id
+                          ? { ...t, playerId: selectedSlot.playerId }
+                          : t.id === selectedSlot.id
+                            ? { ...t, playerId: undefined }
+                            : t),
+                      }));
+                      setSelectedSlotId(undefined); // Clear selection after swap
+                    } else {
+                      setSelectedSlotId(slot.id); // Just select the new slot if no swap
+                    }
+                  } else {
+                    setSelectedSlotId(slot.id);
+                  }
+                }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter")
                     setSelectedSlotId(isSelected ? undefined : slot.id);
