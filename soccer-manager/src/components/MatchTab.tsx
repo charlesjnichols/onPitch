@@ -40,14 +40,38 @@ export default function MatchTab() {
     useEffect(() => {
         const withMs = roster.map(p => ({ ...p, ms: playerTimes[p.id] }));
         const onField = withMs.filter(p => p.isOnField);
-        setOnFieldPlayers([...onField].sort((a, b) => {
-            if (b.ms - a.ms !== 0) {
-                return b.ms - a.ms; // Primary sort by minutes played (descending)
+
+        // Define the desired order of positions
+        const positionOrder = ['GK', 'LB', 'CB', 'RB', 'DM', 'CM', 'AM', 'LW', 'RW', 'ST'];
+
+        const sortedOnField = [...onField].sort((a, b) => {
+            const slotA = tactics.find(t => t.playerId === a.id);
+            const slotB = tactics.find(t => t.playerId === b.id);
+
+            const positionA = slotA ? slotA.id.toUpperCase() : 'N/A';
+            const positionB = slotB ? slotB.id.toUpperCase() : 'N/A';
+
+            const indexA = positionOrder.indexOf(positionA);
+            const indexB = positionOrder.indexOf(positionB);
+
+            if (indexA !== -1 && indexB !== -1) {
+                return indexA - indexB; // Sort by position order if both positions are in the order array
+            } else if (indexA !== -1) {
+                return -1; // a comes before b if only a's position is in the order array
+            } else if (indexB !== -1) {
+                return 1; // b comes before a if only b's position is in the order array
             } else {
-                return (a.number || 0) - (b.number || 0); // Secondary sort by player number (ascending)
+                // If neither position is in the order array, sort by minutes played and then player number
+                if (b.ms - a.ms !== 0) {
+                    return b.ms - a.ms;
+                } else {
+                    return (a.number || 0) - (b.number || 0);
+                }
             }
-        }));
-    }, [roster, playerTimes, tick]);
+        });
+
+        setOnFieldPlayers(sortedOnField);
+    }, [roster, playerTimes, tick, tactics]);
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, width: '90%', maxWidth: 600, mx: 'auto' }}>
