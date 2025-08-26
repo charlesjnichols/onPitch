@@ -4,12 +4,14 @@ import { useAppStore } from '../store';
 import SubSheet from './Subs/SubSheet';
 import { Box, Typography, Stack } from '@mui/material';
 import Bench from './Bench/Bench';
+import { formationLayouts } from '../store'; // Import formationLayouts
 
 export default function MatchTab() {
     const roster = useAppStore(s => s.roster);
     const getFormattedLiveMinutes = useAppStore(s => s.getFormattedLiveMinutes);
     const isRunning = useAppStore(s => s.clock.isRunning);
-    const tactics = useAppStore(s => s.tactics); // Access tactics
+    const tactics = useAppStore(s => s.tactics);
+    const formation = useAppStore(s => s.formation); // Access the current formation
 
     const [sheetOpen, setSheetOpen] = useState(false);
     const [benchId, setBenchId] = useState<string | undefined>(undefined);
@@ -41,8 +43,13 @@ export default function MatchTab() {
         const withMs = roster.map(p => ({ ...p, ms: playerTimes[p.id] }));
         const onField = withMs.filter(p => p.isOnField);
 
-        // Define the desired order of positions
-        const positionOrder = ['GK', 'LB', 'CB', 'RB', 'DM', 'CM', 'AM', 'LW', 'RW', 'ST'];
+        // Get the layout for the current formation
+        const currentFormationLayout = formationLayouts[formation];
+
+        // Define the desired order of positions based on the order property in the formation layout
+        const positionOrder = Object.entries(currentFormationLayout)
+            .sort(([, a], [, b]) => a.order - b.order)
+            .map(([positionId]) => positionId.toUpperCase());
 
         const sortedOnField = [...onField].sort((a, b) => {
             const slotA = tactics.find(t => t.playerId === a.id);
@@ -71,7 +78,7 @@ export default function MatchTab() {
         });
 
         setOnFieldPlayers(sortedOnField);
-    }, [roster, playerTimes, tick, tactics]);
+    }, [roster, playerTimes, tick, tactics, formation]);
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, width: '90%', maxWidth: 600, mx: 'auto' }}>
