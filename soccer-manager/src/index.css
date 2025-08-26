@@ -1,17 +1,88 @@
-@import "tailwindcss";
-
-@plugin "tailwindcss-animate";
-
-@theme {
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+/* Base dark theme body */
+html, body, #root { 
+  height: 100%; 
 }
 
-/* Base dark theme body */
-html, body, #root { height: 100%; }
-body { @apply bg-neutral-950 text-neutral-100 antialiased; padding-bottom: env(safe-area-inset-bottom); }
+body { 
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Enhanced dark theme classes */
+.dark-theme {
+  color-scheme: dark;
+}
 
 /* Touch optimizations */
-button { touch-action: manipulation; }
+button { 
+  touch-action: manipulation; 
+  transition: all 0.2s ease-in-out;
+}
 
 /* Utility helpers */
-.container { @apply mx-auto px-4; }
+.container { 
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* Custom scrollbar for dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: var(--color-surface-300);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-surface-400);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-primary);
+}
+
+/* Selection colors */
+::selection {
+  background-color: rgba(var(--color-primary-rgb), 0.3);
+}
+
+/* Focus styles for accessibility */
+.focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Loading states */
+.loading {
+  animation: pulse 1.5s ease-in-out infinite;
+  background-color: var(--color-surface-300);
+}
+
+/* Enhanced transitions */
+.enhanced-transition {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Glass morphism effect */
+.glass {
+  background-color: rgba(var(--color-surface-200-rgb), 0.8);
+  backdrop-filter: blur(20px); /* approximate value for backdrop-blur-md */
+  border: 1px solid rgba(var(--color-surface-400-rgb), 0.5);
+}
+
+/* Soccer field pattern background */
+.field-pattern {
+  background-image: 
+    radial-gradient(circle at 25% 25%, rgba(16, 185, 129, 0.1) 2px, transparent 2px),
+    radial-gradient(circle at 75% 75%, rgba(16, 185, 129, 0.1) 2px, transparent 2px);
+  background-size: 30px 30px;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .5; }
+}

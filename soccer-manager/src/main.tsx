@@ -26,3 +26,4 @@ const updateSW = registerSW({
     // no-op
   },
 })
+

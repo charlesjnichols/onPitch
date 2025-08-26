@@ -22,7 +22,7 @@ async function unregisterServiceWorkerAndClearCaches() {
 export default function CSVExport() {
   const roster = useAppStore(s => s.roster)
   const subs = useAppStore(s => s.subs)
-  const getLiveMinutesMs = useAppStore(s => s.getLiveMinutesMs)
+  const getLiveMinutesSec = useAppStore(s => s.getLiveMinutesSec)
 
   function download(filename: string, text: string) {
     const blob = new Blob([text], { type: 'text/csv;charset=utf-8;' })
@@ -39,8 +39,8 @@ export default function CSVExport() {
       id: p.id,
       number: p.number ?? '',
       name: p.name,
-      minutes: formatClock(getLiveMinutesMs(p.id)),
-      ms: Math.round(getLiveMinutesMs(p.id)),
+      minutes: formatClock(getLiveMinutesSec(p.id)),
+      ms: Math.round(getLiveMinutesSec(p.id)),
       onField: p.isOnField ? 'yes' : 'no',
       positions: p.positionTags.join('|'),
     }))

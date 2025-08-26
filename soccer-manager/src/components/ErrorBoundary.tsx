@@ -1,4 +1,5 @@
 import React from 'react'
+import { Box, Button } from '@mui/material'
 
 type Props = { children: React.ReactNode }
 
@@ -18,13 +19,13 @@ export class ErrorBoundary extends React.Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-dvh flex items-center justify-center p-6 text-center text-neutral-200">
-          <div className="max-w-md space-y-3">
-            <div className="text-xl font-semibold">Something went wrong</div>
-            <div className="text-sm text-neutral-400">Please refresh the page. If the issue persists, use Export Debug and share the file.</div>
-            <button className="px-3 py-2 rounded border border-neutral-700 bg-neutral-800 text-sm" onClick={() => location.reload()}>Reload</button>
-          </div>
-        </div>
+        <Box sx={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 6, textAlign: 'center', color: 'var(--color-text-secondary)' }}>
+          <Box sx={{ maxWidth: '480px', display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Box sx={{ fontSize: '1.25rem', fontWeight: 'semibold' }}>Something went wrong</Box>
+            <Box sx={{ fontSize: '0.875rem', color: 'var(--color-text-tertiary)' }}>Please refresh the page. If the issue persists, use Export Debug and share the file.</Box>
+            <Button variant="outlined" sx={{ padding: 2, borderRadius: 1, border: '1px solid var(--color-surface-400)', backgroundColor: 'var(--color-surface-200)', fontSize: '0.875rem', color: 'var(--color-text-secondary)' }} onClick={() => location.reload()}>Reload</Button>
+          </Box>
+        </Box>
       )
     }
     return this.props.children

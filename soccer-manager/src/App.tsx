@@ -1,37 +1,69 @@
-import './App.css'
-import { useState } from 'react'
-import RosterTab from './components/RosterTab'
-import LineupTab from './components/LineupTab'
-import MatchTab from './components/MatchTab'
+import React, { useState } from 'react';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { useMediaQuery } from '@mui/material';
+import CssBaseline from '@mui/material/CssBaseline';
+import RosterTab from './components/RosterTab';
+import LineupTab from './components/LineupTab';
+import MatchTab from './components/MatchTab';
+import { Box, Tabs, Tab } from '@mui/material';
 
 function App() {
-  const [tab, setTab] = useState<'roster' | 'lineup' | 'match'>('roster')
+  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+
+  const theme = React.useMemo(
+    () =>
+      createTheme({
+        palette: {
+          mode: prefersDarkMode ? 'dark' : 'light',
+          primary: {
+            main: '#10b981', // Your primary color
+          },
+          background: {
+            default: prefersDarkMode ? '#0a0a0a' : '#fff',
+            paper: prefersDarkMode ? '#171717' : '#fff',
+          },
+          text: {
+            primary: prefersDarkMode ? '#f5f5f5' : '#000',
+            secondary: prefersDarkMode ? '#a3a3a3' : '#666',
+          },
+        },
+      }),
+    [prefersDarkMode],
+  );
+  const [tab, setTab] = useState<number>(0);
+
+  const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
+    setTab(newValue);
+  };
 
   return (
-    <div className="min-h-dvh text-neutral-100 pb-[env(safe-area-inset-bottom)]">
-      <header className="border-b border-neutral-800 sticky top-0 bg-neutral-950/80 backdrop-blur z-10 pt-[env(safe-area-inset-top)]">
-        <div className="container h-14 flex items-center justify-between">
-          <h1 className="text-lg font-semibold">Soccer Manager</h1>
-          <nav className="flex gap-2 text-sm">
-            <button className={`px-3 py-1.5 rounded ${tab==='roster' ? 'bg-neutral-800 border border-neutral-700' : 'text-neutral-300'}`} onClick={() => setTab('roster')}>Roster</button>
-            <button className={`px-3 py-1.5 rounded ${tab==='lineup' ? 'bg-neutral-800 border border-neutral-700' : 'text-neutral-300'}`} onClick={() => setTab('lineup')}>Lineup</button>
-            <button className={`px-3 py-1.5 rounded ${tab==='match' ? 'bg-neutral-800 border border-neutral-700' : 'text-neutral-300'}`} onClick={() => setTab('match')}>Match</button>
-          </nav>
-        </div>
-      </header>
-      <main className="container py-6">
-        {tab === 'roster' && (
-          <RosterTab onSendToLineup={() => setTab('lineup')} />
-        )}
-        {tab === 'lineup' && (
-          <LineupTab />
-        )}
-        {tab === 'match' && (
-          <MatchTab />
-        )}
-      </main>
-    </div>
-  )
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Box sx={{ minHeight: '100dvh', bgcolor: 'background.default', color: 'text.primary', pb: `${8}px` }}>
+        <Box sx={{ position: 'sticky', top: 0, zIndex: 10, bgcolor: 'background.paper' }}>
+          <Box sx={{ maxWidth: '1280px', margin: '0 auto', padding: (theme) => theme.spacing(0, 2) }}>
+            <Tabs value={tab} onChange={handleChange} aria-label="basic tabs example" centered>
+              <Tab label="Roster" />
+              <Tab label="Lineup" />
+              <Tab label="Match" />
+            </Tabs>
+          </Box>
+        </Box>
+        <Box sx={{ maxWidth: '1280px', margin: '0 auto', py: `${6}px`, spacing: 6 }}>
+          {tab === 0 && (
+            <RosterTab />
+          )}
+          {tab === 1 && (
+            <LineupTab />
+          )}
+          {tab === 2 && (
+            <MatchTab />
+          )}
+        </Box>
+      </Box>
+    </ThemeProvider>
+  );
 }
 
-export default App
+export default App;
+

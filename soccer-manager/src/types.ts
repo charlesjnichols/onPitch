@@ -1,3 +1,5 @@
+import type { FormationId } from "./store";
+
 export type PositionTag =
   | 'GK' | 'LB' | 'RB' | 'CB' | 'LWB' | 'RWB'
   | 'CDM' | 'CM' | 'CAM'
@@ -9,7 +11,7 @@ export interface Player {
   number?: number;
   positionTags: PositionTag[];
   isOnField: boolean;
-  minutesPlayedMs: number;
+  minutesPlayedSec: number;
 }
 
 export interface SubEvent {
@@ -28,9 +30,9 @@ export interface MatchConfig {
 export interface MatchClockState {
   isRunning: boolean;
   // Epoch ms when the clock last started (for background-safe tracking)
-  startedAtMs?: number;
+  startedAtSec?: number;
   // Total accumulated ms while paused
-  accumulatedMs: number;
+  accumulatedSec: number;
 }
 
 export interface TacticsSlot {
@@ -39,8 +41,6 @@ export interface TacticsSlot {
   y: number; // 0..1 from top
   playerId?: string;
 }
-
-export type FormationId = '4-4-2' | '4-3-3' | '3-5-2'
 
 export interface MatchState {
   roster: Player[];

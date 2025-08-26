@@ -9,11 +9,16 @@ export const SLOT_ELIGIBLE_TAGS: Record<string, PositionTag[]> = {
 	lcb: ['CB'],
 	rcb: ['CB'],
 	rb: ['RB', 'RWB'],
+	cdm: ['CDM', 'CM', 'CAM'],
 	lcm: ['CDM', 'CM', 'CAM'],
 	cm: ['CDM', 'CM', 'CAM'],
+	cm1: ['CDM', 'CM', 'CAM'],
+	cm2: ['CDM', 'CM', 'CAM'],
 	rcm: ['CDM', 'CM', 'CAM'],
 	lw: ['LW'],
 	st: ['ST', 'CF'],
+	st1: ['ST', 'CF'],
+	st2: ['ST', 'CF'],
 	rw: ['RW'],
 }
 

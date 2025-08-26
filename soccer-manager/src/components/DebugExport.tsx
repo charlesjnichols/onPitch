@@ -28,6 +28,6 @@ export default function DebugExport() {
   }
 
   return (
-    <button className="px-3 py-2 rounded border border-neutral-700 bg-neutral-800 text-sm" onClick={exportDebug}>Export Debug</button>
+    <button className="custom-debug-button" onClick={exportDebug}>Export Debug</button>
   )
 }
