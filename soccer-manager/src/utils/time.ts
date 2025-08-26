@@ -1,11 +1,10 @@
-export function formatClock(ms: number): string {
-  const totalSeconds = Math.max(0, Math.floor(ms / 1000))
+export function formatClock(totalSeconds: number): string {
   const minutes = Math.floor(totalSeconds / 60)
   const seconds = totalSeconds % 60
   return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
 }
 
-export function getTotalElapsedMs(isRunning: boolean, startedAtMs: number | undefined, accumulatedMs: number): number {
-  if (isRunning && startedAtMs) return accumulatedMs + (Date.now() - startedAtMs)
-  return accumulatedMs
+export function getTotalElapsedSec(isRunning: boolean, startedAtSec: number | undefined, accumulatedSec: number): number {
+  if (isRunning && startedAtSec) return accumulatedSec + ((Date.now() /1000) - startedAtSec)
+  return accumulatedSec
 }

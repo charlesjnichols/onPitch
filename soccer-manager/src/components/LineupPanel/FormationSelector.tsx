@@ -1,5 +1,5 @@
 import { Box, Select, MenuItem, Typography } from '@mui/material';
-import { useAppStore, FORMATION_LAYOUTS, type FormationId } from '../store';
+import { useAppStore, FORMATION_LAYOUTS, type FormationId } from '../../store';
 import type { SelectChangeEvent } from '@mui/material'; // Import SelectChangeEvent
 
 export default function FormationSelector() {
@@ -12,7 +12,7 @@ export default function FormationSelector() {
 
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-      <Typography variant="subtitle2" sx={{ color: 'neutral.300', fontSize: '0.875rem' }}>Formation</Typography>
+      <Typography variant="subtitle1" sx={{ color: 'neutral.300', fontSize: '1.5rem', display: 'flex', alignItems: 'center' }}>Formation</Typography>
       <Select
         value={formation}
         onChange={handleFormationChange}

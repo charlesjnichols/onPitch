@@ -11,7 +11,7 @@ export interface Player {
   number?: number;
   positionTags: PositionTag[];
   isOnField: boolean;
-  minutesPlayedMs: number;
+  minutesPlayedSec: number;
 }
 
 export interface SubEvent {
@@ -30,9 +30,9 @@ export interface MatchConfig {
 export interface MatchClockState {
   isRunning: boolean;
   // Epoch ms when the clock last started (for background-safe tracking)
-  startedAtMs?: number;
+  startedAtSec?: number;
   // Total accumulated ms while paused
-  accumulatedMs: number;
+  accumulatedSec: number;
 }
 
 export interface TacticsSlot {

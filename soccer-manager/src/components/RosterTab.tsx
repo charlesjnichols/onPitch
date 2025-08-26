@@ -1,9 +1,9 @@
 import { useRef } from 'react'
 import Papa from 'papaparse'
-import RosterPanel from './RosterPanel'
+import RosterPanel from './RosterPanel/RosterPanel'
 import { useAppStore } from '../store'
-import { formatClock } from '../utils/time'
 import { Box, Button, styled } from '@mui/material'
+import type { PositionTag } from '../types'
 
 const VisuallyHiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
@@ -20,7 +20,7 @@ const VisuallyHiddenInput = styled('input')({
 export default function RosterTab() {
   const roster = useAppStore(s => s.roster)
   const addPlayer = useAppStore(s => s.addPlayer)
-  const getLiveMinutesMs = useAppStore(s => s.getLiveMinutesMs)
+  const resetRoster = useAppStore(s => s.resetRoster)
 
   const fileRef = useRef<HTMLInputElement | null>(null)
 
@@ -28,9 +28,8 @@ export default function RosterTab() {
     const rows = roster.map(p => ({
       Name: p.name,
       Number: p.number ?? '',
-      PreferredPos: (p.positionTags[0] ?? ''),
+      PreferredPos: (p.positionTags.join('|') ?? ''),
       OnField: p.isOnField ? 'yes' : 'no',
-      Minutes: formatClock(getLiveMinutesMs(p.id)),
     }))
     const csv = Papa.unparse(rows)
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
@@ -43,6 +42,7 @@ export default function RosterTab() {
   }
 
   const onImport = (file: File) => {
+    resetRoster();
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
@@ -52,12 +52,15 @@ export default function RosterTab() {
         for (const r of rows) {
           const name = String(r.Name || r.name || '').trim()
           const number = r.Number ? Number(r.Number) : undefined
-          const preferred = String(r.PreferredPos || r.preferredPos || '').trim()
+          const preferred = String(r.PreferredPos || r.preferredPos || '').trim().split('|')
           if (!name) continue
           const key = `${name}|${number ?? ''}`
           if (seen.has(key)) continue
           seen.add(key)
-          addPlayer({ name, number, positionTags: preferred ? [preferred as any] : [], isOnField: false })
+          addPlayer({
+            name, number, positionTags: preferred ? preferred as PositionTag[] : [], isOnField: false,
+            minutesPlayedSec: 0
+          })
         }
         alert('Roster imported')
       }

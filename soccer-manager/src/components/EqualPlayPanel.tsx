@@ -4,16 +4,16 @@ import { formatClock } from '../utils/time'
 
 export default function EqualPlayPanel() {
   const roster = useAppStore(s => s.roster)
-  const getLiveMinutesMs = useAppStore(s => s.getLiveMinutesMs)
+  const getLiveMinutesSec = useAppStore(s => s.getLiveMinutesSec)
 
   const stats = useMemo(() => {
-    const msList = roster.map(p => getLiveMinutesMs(p.id))
+    const msList = roster.map(p => getLiveMinutesSec(p.id))
     const avg = msList.length ? msList.reduce((a, b) => a + b, 0) / msList.length : 0
-    const withMs = roster.map(p => ({ ...p, ms: getLiveMinutesMs(p.id) }))
+    const withMs = roster.map(p => ({ ...p, ms: getLiveMinutesSec(p.id) }))
     const onField = withMs.filter(p => p.isOnField).sort((a, b) => b.ms - a.ms)
     const bench = withMs.filter(p => !p.isOnField).sort((a, b) => a.ms - b.ms)
     return { avg, withMs, onField, bench }
-  }, [roster, getLiveMinutesMs])
+  }, [roster, getLiveMinutesSec])
 
   const suggestOut = stats.onField[0]
   const suggestIn = stats.bench[0]
