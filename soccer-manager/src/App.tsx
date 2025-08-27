@@ -5,6 +5,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import RosterTab from './components/RosterTab';
 import LineupTab from './components/LineupTab';
 import MatchTab from './components/MatchTab';
+import HelpTab from './components/HelpTab';
 import { Box, Tabs, Tab } from '@mui/material';
 
 function App() {
@@ -46,6 +47,7 @@ function App() {
               <Tab label="Roster" />
               <Tab label="Lineup" />
               <Tab label="Match" />
+              <Tab label="Help" />
             </Tabs>
           </Box>
         </Box>
@@ -58,6 +60,9 @@ function App() {
           )}
           {tab === 2 && (
             <MatchTab />
+          )}
+          {tab === 3 && ( 
+            <HelpTab />
           )}
         </Box>
       </Box>

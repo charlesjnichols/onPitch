@@ -27,7 +27,7 @@ function RosterInput({ onAddPlayer }: RosterInputProps) {
         value={name}
         onChange={(e) => setName(e.target.value)}
       />
-      <Button variant="contained" color="primary" onClick={handleAddPlayer}>
+      <Button variant="outlined" color="primary" onClick={handleAddPlayer}>
         Add
       </Button>
     </Box>
