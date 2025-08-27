@@ -26,7 +26,7 @@ const PlayerRow: React.FC<PlayerRowProps> = ({ player }) => {
   };
 
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, p: 2, bgcolor: 'background.paper', borderRadius: 2, border: '1px solid rgba(255, 255, 255, 0.12)', mb: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, p: 2, bgcolor: 'background.paper', borderRadius: 2, border: (theme) => `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'}`, mb: 1 }}>
       <TextField
         sx={{ width: 50 }}
         placeholder="#"

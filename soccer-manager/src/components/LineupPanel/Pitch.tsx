@@ -1,4 +1,4 @@
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, useTheme } from "@mui/material";
 import { useAppStore } from "../../store";
 import { formatClock } from "../../utils/time";
 
@@ -14,26 +14,29 @@ export default function Pitch({
   const tactics = useAppStore((s) => s.tactics);
   const roster = useAppStore((s) => s.roster);
   const getLiveMinutesSec = useAppStore((s) => s.getLiveMinutesSec);
+  const theme = useTheme();
 
   return (
     <Box
       sx={{
         borderRadius: "12px",
-        border: "1px solid #444",
+        border: `1px solid ${theme.palette.mode === 'dark' ? '#444' : '#ccc'}`, // Dynamic border color
         background:
-          "linear-gradient(to bottom, rgba(10, 27, 17, 0.6), rgba(50, 50, 50, 0.6))",
+          theme.palette.mode === 'dark'
+            ? "linear-gradient(to bottom, rgba(10, 27, 17, 0.6), rgba(50, 50, 50, 0.6))"
+            : "linear-gradient(to bottom, rgba(180, 200, 180, 0.6), rgba(220, 230, 220, 0.6))", // Light mode gradient
         position: "relative",
         touchAction: "none",
         userSelect: "none",
         aspectRatio: "3 / 3",
-        height: "calc(100%)", // Increased height
+        height: "calc(100%)",
       }}
     >
       <Box
         sx={{
           position: "absolute",
           inset: 12,
-          border: "1px solid rgba(255, 255, 255, 0.6)",
+          border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)'}`, // Dynamic border color
           borderRadius: "8px",
         }}
       >
@@ -45,7 +48,7 @@ export default function Pitch({
             top: "50%",
             height: "1px",
             width: "calc(100%)",
-            bgcolor: "rgba(255, 255, 255, 0.6)",
+            bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)', // Dynamic bgcolor
           }}
         />
 
@@ -57,7 +60,7 @@ export default function Pitch({
             left: "calc(50% - 80px)", // Adjust for centering
             height: "50px", // Adjust height
             width: "160px", // Adjust width
-            border: "1px solid rgba(255, 255, 255, 0.6)",
+            border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)'}`, // Dynamic border color
           }}
         />
         <Box
@@ -67,7 +70,7 @@ export default function Pitch({
             left: "calc(50% - 30px)", // Adjust for centering
             height: "20px", // Adjust height
             width: "60px", // Adjust width
-            border: "1px solid rgba(255, 255, 255, 0.6)",
+            border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)'}`, // Dynamic border color
           }}
         />
         <Box
@@ -77,7 +80,7 @@ export default function Pitch({
             left: "calc(50% - 80px)", // Adjust for centering
             height: "50px", // Adjust height
             width: "160px", // Adjust width
-            border: "1px solid rgba(255, 255, 255, 0.6)",
+            border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)'}`, // Dynamic border color
           }}
         />
         <Box
@@ -87,7 +90,7 @@ export default function Pitch({
             left: "calc(50% - 30px)", // Adjust for centering
             height: "20px", // Adjust height
             width: "60px", // Adjust width
-            border: "1px solid rgba(255, 255, 255, 0.6)",
+            border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)'}`, // Dynamic border color
           }}
         />
       </Box>
@@ -214,9 +217,10 @@ export default function Pitch({
                     transform: "translateX(-50%) translateY(150%)",
                     mb: 1,
                     whitespace: "nowrap",
-                    backgroundColor: "rgba(0, 0, 0, 0.7)", // Opaque background
+                    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.7)' : 'rgba(255, 255, 255, 0.7)', // Opaque background
                     padding: "2px 4px", // Add padding for readability
                     borderRadius: "4px", // Round the corners
+                    color: theme.palette.mode === 'dark' ? theme.palette.text.primary : theme.palette.text.primary, // Text color
                   }}
                 >
                   {player.number ? `#${player.number}` : ""}&nbsp;{player.name}

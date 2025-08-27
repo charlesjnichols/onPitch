@@ -1,4 +1,4 @@
-import { Card, CardContent, Typography, Stack } from '@mui/material';
+import { Card, CardContent, Typography, Stack, useTheme } from '@mui/material'; // Import useTheme
 import { useAppStore } from '../../store';
 
 interface BenchItemProps {
@@ -10,18 +10,20 @@ interface BenchItemProps {
 
 function BenchItem({ id, name, number, positionTags }: BenchItemProps) {
     const formattedMinutes = useAppStore(state => state.getFormattedLiveMinutes(id))
+    const theme = useTheme(); // Get the current theme
 
     return (
         <Card
             sx={{
                 borderRadius: '4px',
-                border: '1px solid #555',
-                backgroundColor: 'rgba(30, 30, 30, 0.6)',
+                border: `1px solid ${theme.palette.mode === 'dark' ? '#555' : '#ccc'}`, // Dynamic border color
+                backgroundColor: theme.palette.mode === 'dark' ? 'rgba(30, 30, 30, 0.6)' : '#fff', // Dynamic background color
                 touchAction: 'manipulation',
                 cursor: 'pointer',
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
+                color: theme.palette.text.primary, // Set text color
             }}
             aria-label={`Bench ${number ? `#${number} ` : ''}${name}`}
         >

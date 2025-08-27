@@ -1,9 +1,12 @@
 import { useState } from 'react';
-import { Box, Button, TextField, styled } from '@mui/material';
+import { Box, Button, TextField, styled, useTheme } from '@mui/material';
 
 const StyledTextField = styled(TextField)(({ theme }) => ({
   backgroundColor: theme.palette.background.paper,
   borderRadius: 4,
+  '& .MuiInputBase-root': {
+    color: theme.palette.text.primary,
+  },
 }));
 
 interface RosterInputProps {
@@ -12,6 +15,7 @@ interface RosterInputProps {
 
 function RosterInput({ onAddPlayer }: RosterInputProps) {
   const [name, setName] = useState('');
+  const theme = useTheme();
 
   const handleAddPlayer = () => {
     if (!name.trim()) return;
@@ -26,8 +30,13 @@ function RosterInput({ onAddPlayer }: RosterInputProps) {
         placeholder="Add player name"
         value={name}
         onChange={(e) => setName(e.target.value)}
+        InputProps={{
+          style: {
+            color: theme.palette.text.primary,
+          },
+        }}
       />
-      <Button variant="outlined" color="primary" onClick={handleAddPlayer}>
+      <Button variant="contained" color="primary" onClick={handleAddPlayer}>
         Add
       </Button>
     </Box>

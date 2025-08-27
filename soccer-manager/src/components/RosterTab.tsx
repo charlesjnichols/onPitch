@@ -70,8 +70,8 @@ export default function RosterTab() {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, width: '90%', maxWidth: 600, mx: 'auto' }}>
       <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', mt: 2 }}>
-          <Button variant="outlined" onClick={() => fileRef.current?.click()}>Import CSV</Button>
-          <Button variant="outlined" onClick={exportRosterCsv}>Export CSV</Button>
+          <Button variant="contained" onClick={() => fileRef.current?.click()}>Import CSV</Button>
+          <Button variant="contained" onClick={exportRosterCsv}>Export CSV</Button>
 
           <VisuallyHiddenInput
             type="file"

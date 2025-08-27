@@ -7,6 +7,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   padding-bottom: env(safe-area-inset-bottom);
+  overflow-y: scroll; /* Force vertical scrollbar to always be visible */
 }
 
 /* Enhanced dark theme classes */
@@ -85,20 +86,4 @@ button {
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: .5; }
-}
-
-/* Dark theme variables */
-:root {
-  --color-primary: #10b981;
-  --color-primary-rgb: 16, 185, 129;
-  --color-surface-200: #1f2937;
-  --color-surface-200-rgb: 31, 41, 55;
-  --color-surface-300: #111827;
-  --color-surface-400: #1f2937;
-  --color-text-200: #e5e7eb;
-}
-
-body[data-theme="dark"] {
-  background-color: var(--color-surface-300);
-  color: var(--color-text-200);
 }
