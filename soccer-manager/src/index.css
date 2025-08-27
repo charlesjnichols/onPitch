@@ -86,3 +86,8 @@ button {
   0%, 100% { opacity: 1; }
   50% { opacity: .5; }
 }
+
+body[data-theme="dark"] {
+  background-color: var(--color-surface-300);
+  color: var(--color-text-200);
+}
