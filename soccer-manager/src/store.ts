@@ -151,8 +151,12 @@ export interface AppStore extends MatchState {
   cancelSub: (sub: SubstitutionRequest) => void;
   performSubs: () => void;
   subClock: ClockState;
+  gameClock: ClockState;
   resetSubClock: () => void;
   setConfig: (patch: Partial<MatchState["config"]>) => void;
+  recordShot: (playerId: string) => void;
+  recordPass: (playerId: string) => void;
+  recordSave: (playerId: string) => void;
 }
 
 const initialState: MatchState = {
@@ -170,6 +174,7 @@ export const useAppStore = create<AppStore>()(
       ...initialState,
       substitutionQueue: [],
       subClock: { isRunning: false, accumulatedSec: 0 },
+      gameClock: { isRunning: false, accumulatedSec: 0 },
 
       addPlayer: (p) =>
         set((s) => {
@@ -181,6 +186,9 @@ export const useAppStore = create<AppStore>()(
             positionTags: p.positionTags ?? [],
             isOnField: p.isOnField ?? false,
             minutesPlayedSec: 0,
+            shots: 0,
+            passes: 0,
+            saves: 0,
           };
           return { roster: [...s.roster, player] };
         }),
@@ -216,6 +224,27 @@ export const useAppStore = create<AppStore>()(
           };
         }),
 
+      recordShot: (playerId: string) =>
+        set((s) => ({
+          roster: s.roster.map((pl) =>
+            pl.id === playerId ? { ...pl, shots: pl.shots + 1 } : pl
+          ),
+        })),
+
+      recordPass: (playerId: string) =>
+        set((s) => ({
+          roster: s.roster.map((pl) =>
+            pl.id === playerId ? { ...pl, passes: pl.passes + 1 } : pl
+          ),
+        })),
+
+      recordSave: (playerId: string) =>
+        set((s) => ({
+          roster: s.roster.map((pl) =>
+            pl.id === playerId ? { ...pl, saves: pl.saves + 1 } : pl
+          ),
+        })),
+
       startClock: () =>
         set((s) => {
           const now = Date.now() / 1000;
@@ -232,6 +261,11 @@ export const useAppStore = create<AppStore>()(
                   isRunning: true,
                   startedAtSec: now,
                 },
+                gameClock: {
+                  ...s.gameClock,
+                  isRunning: true,
+                  startedAtSec: now,
+                },
               };
         }),
 
@@ -240,7 +274,8 @@ export const useAppStore = create<AppStore>()(
           if (
             !s.clock.isRunning ||
             s.clock.startedAtSec == null ||
-            s.subClock.startedAtSec == null
+            s.subClock.startedAtSec == null ||
+            s.gameClock.startedAtSec == null
           )
             return s;
           const now = Date.now() / 1000;
@@ -259,6 +294,12 @@ export const useAppStore = create<AppStore>()(
               startedAtSec: s.subClock.startedAtSec,
               accumulatedSec: s.subClock.accumulatedSec + subElapsed,
             },
+            gameClock: {
+              ...s.gameClock,
+              isRunning: false,
+              startedAtSec: s.gameClock.startedAtSec,
+              accumulatedSec: s.gameClock.accumulatedSec + subElapsed,
+            },
           };
         }),
 
@@ -274,6 +315,11 @@ export const useAppStore = create<AppStore>()(
             accumulatedSec: 0,
           },
           subClock: {
+            isRunning: false,
+            startedAtSec: undefined,
+            accumulatedSec: 0,
+          },
+          gameClock: {
             isRunning: false,
             startedAtSec: undefined,
             accumulatedSec: 0,
@@ -301,14 +347,24 @@ export const useAppStore = create<AppStore>()(
         set((s) => {
           const now = Date.now() / 1000;
           let roster = s.roster;
+          let newClockStartedAtSec = s.clock.startedAtSec; // Default to current
+
+          // Step 1: Accumulate minutes for all players currently ON FIELD
+          // This "snapshots" their time played up to this exact moment of substitution.
           if (s.clock.isRunning && s.clock.startedAtSec) {
-            const elapsed = now - s.clock.startedAtSec;
+            const elapsedSinceLastClockStart = now - s.clock.startedAtSec;
             roster = roster.map((pl) =>
               pl.isOnField
-                ? { ...pl, minutesPlayedSec: pl.minutesPlayedSec + elapsed }
+                ? { ...pl, minutesPlayedSec: pl.minutesPlayedSec + elapsedSinceLastClockStart }
                 : pl
             );
+            // If the clock is running, reset its 'startedAtSec' to 'now'
+            // so all currently on-field players (including the new one) start fresh
+            // for live calculation from this moment.
+            newClockStartedAtSec = now;
           }
+
+          // Step 2: Update the isOnField status for players involved in the sub
           if (outId) {
             roster = roster.map((pl) =>
               pl.id === outId ? { ...pl, isOnField: false } : pl
@@ -318,36 +374,63 @@ export const useAppStore = create<AppStore>()(
             pl.id === inId ? { ...pl, isOnField: true } : pl
           );
 
+          // Step 3: Enforce maxOnField rule
           const onFieldCount = roster.filter((p) => p.isOnField).length;
           if (onFieldCount > s.config.maxOnField) {
-            // enforce: if too many, revert the last in
+            // Revert the playerIn if it violates the maxOnField rule
             roster = roster.map((pl) =>
               pl.id === inId ? { ...pl, isOnField: false } : pl
             );
             console.warn(
-              "Cannot sub player: Maximum number of players on the field reached."
+              "Cannot sub player: Maximum number of players on the field reached. Reverting substitution for player in."
             );
-            return s;
+            // If the sub is reverted, the clock startedAtSec should also revert
+            // to what it was before this attempted sub, if it was running.
+            // This case needs careful consideration: if the sub is invalid,
+            // we should technically revert the `minutesPlayedSec` snapshot too.
+            // For simplicity, we'll just prevent the `isOnField` change and `startedAtSec` update
+            // if the `maxOnField` rule is violated.
+            // Since we've already snapshot for *all* players, we need to undo this specific part.
+            // A more robust solution might defer accumulation until after validation.
+            // For now, let's just make sure the `startedAtSec` isn't updated.
+            newClockStartedAtSec = s.clock.startedAtSec; // Revert startedAtSec
+            return s; // Return current state without applying the invalid sub
           }
 
+          // Step 4: Create the substitution event
           const sub: SubEvent = {
             id: uid(),
             timestampMs: now * 1000,
             playerInId: inId,
             playerOutId: outId,
           };
+
+          // Step 5: Update tactics to reflect the player change in the formation
+          const tactics = s.tactics.map((slot) => {
+              // If the slot had the player who is going out, put the new player in.
+              // If the slot had the player who is coming in (meaning they were already on field elsewhere),
+              // clear that slot.
+              if (slot.playerId === outId) {
+                  return { ...slot, playerId: inId };
+              } else if (slot.playerId === inId) {
+                  // This handles cases where a player is swapped from one tactical slot to another
+                  // (e.g., inId was already in a slot, now it's moving to the outId's slot).
+                  // So we clear the original slot of inId.
+                  return { ...slot, playerId: undefined };
+              } else {
+                  return slot;
+              }
+          });
+
+
           return {
             roster,
             subs: [...s.subs, sub],
-            tactics: s.tactics.map((slot) => {
-              if (slot.playerId === outId) {
-                return { ...slot, playerId: inId };
-              } else if (slot.playerId === inId) {
-                return { ...slot, playerId: undefined };
-              } else {
-                return slot;
-              }
-            }),
+            tactics,
+            clock: {
+              ...s.clock,
+              startedAtSec: newClockStartedAtSec, // Use the potentially updated startedAtSec
+            },
           };
         }),
 
@@ -550,6 +633,9 @@ export const useAppStore = create<AppStore>()(
             ...player,
             minutesPlayedSec: 0,
             isOnField: false,
+            shots: 0,
+            passes: 0,
+            saves: 0,
           })),
         config: s.config,
         })),
@@ -617,4 +703,5 @@ export const useAppStore = create<AppStore>()(
     }
   )
 );
+
 

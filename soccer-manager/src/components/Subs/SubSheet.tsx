@@ -58,9 +58,6 @@ export default function SubSheet({
 }: SubSheetProps) {
   const roster = useAppStore((s) => s.roster);
   const tactics = useAppStore((s) => s.tactics);
-  const formation = useAppStore((s) => s.formation);
-  
-  const getLiveMinutesSec = useAppStore((s) => s.getLiveMinutesSec);
       
   const { eligible, ineligible } = useMemo(() => {
     if (!benchPlayerId)

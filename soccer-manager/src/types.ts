@@ -9,9 +9,12 @@ export interface Player {
   id: string;
   name: string;
   number?: number;
-  positionTags: PositionTag[];
+  positionTags: string[]; // e.g., ["GK", "DEF", "MID", "FWD"
   isOnField: boolean;
   minutesPlayedSec: number;
+  shots: number;
+  passes: number;
+  saves: number;
 }
 
 export interface SubEvent {

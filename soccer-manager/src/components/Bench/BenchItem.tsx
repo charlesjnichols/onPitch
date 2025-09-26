@@ -6,11 +6,16 @@ interface BenchItemProps {
     name: string;
     number?: number;
     positionTags: string[];
+    // Add new stat props
+    shots: number;
+    passes: number;
+    saves: number;
 }
 
-function BenchItem({ id, name, number, positionTags }: BenchItemProps) {
+function BenchItem({ id, name, number, positionTags, shots, passes, saves }: BenchItemProps) {
     const formattedMinutes = useAppStore(state => state.getFormattedLiveMinutes(id))
     const theme = useTheme(); // Get the current theme
+    const isGoalie = positionTags.includes('GK'); // Determine if the player is a goalie
 
     return (
         <Card
@@ -28,17 +33,31 @@ function BenchItem({ id, name, number, positionTags }: BenchItemProps) {
             aria-label={`Bench ${number ? `#${number} ` : ''}${name}`}
         >
             <CardContent sx={{ p: 1.5, textAlign: 'left', flex: '1 1 auto', display: 'flex', alignItems: 'center' }}>
-                <Typography variant="subtitle1" sx={{ textAlign: 'left' }}>{number ? `#${number} ` : ''}{name}</Typography>
+                <Stack direction="column">
+                    <Typography variant="subtitle1" sx={{ textAlign: 'left' }}>{number ? `#${number} ` : ''}{name}</Typography>
+                    <Typography variant="caption">{positionTags.join(', ')}</Typography>
+                </Stack>
             </CardContent>
-            <CardContent sx={{ p: 1.5, textAlign: 'right', flex: '0 0 auto', display: 'flex', alignItems: 'center' }}>
+            <CardContent sx={{ p: 1.5, textAlign: 'right', flex: '0 0 auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.5 }}>
                 <Stack direction="column" alignItems="flex-end">
                     <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
                         {formattedMinutes} min
                     </Typography>
-                    <Typography variant="caption">
-                        {positionTags.join(', ')}
-                    </Typography>
                 </Stack>
+                {/* Display stats conditionally */}
+                {isGoalie && (
+                    <Typography variant="caption" color="text.secondary">
+                        Saves: {saves}
+                    </Typography>
+                )}
+                    <Stack direction="column" alignItems="flex-end" spacing={0.5}>
+                        <Typography variant="caption" color="text.secondary">
+                            Passes: {passes}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                            Shots: {shots}
+                        </Typography>
+                    </Stack>
             </CardContent>
         </Card>
     );

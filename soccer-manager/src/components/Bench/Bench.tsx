@@ -57,6 +57,10 @@ export default function Bench({ selectedSlotId, onBenchClick }: BenchProps) {
                                     name={p.name}
                                     number={p.number}
                                     positionTags={p.positionTags}
+                                    // Pass new stat props
+                                    shots={p.shots}
+                                    passes={p.passes}
+                                    saves={p.saves}
                                 />
                             </Box>
                         ))}
@@ -88,6 +92,10 @@ export default function Bench({ selectedSlotId, onBenchClick }: BenchProps) {
                                     name={p.name}
                                     number={p.number}
                                     positionTags={p.positionTags}
+                                    // Pass new stat props
+                                    shots={p.shots}
+                                    passes={p.passes}
+                                    saves={p.saves}
                                 />
                             </Box>
                         ))}

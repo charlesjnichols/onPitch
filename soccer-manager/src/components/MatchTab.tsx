@@ -2,18 +2,25 @@ import { useEffect, useState, useMemo } from 'react';
 import ClockPanel from './MatchPanel/ClockPanel';
 import { useAppStore } from '../store';
 import SubSheet from './Subs/SubSheet';
-import { Button, Box, Typography, Stack } from '@mui/material';
+import { Button, Box, Typography, Stack, ButtonGroup } from '@mui/material';
 import Bench from './Bench/Bench';
 import { formationLayouts } from '../store';
-import { formatClock, getTotalElapsedSec } from '../utils/time';
+import { getTotalElapsedSec } from '../utils/time';
 
 export default function MatchTab() {
     const roster = useAppStore(s => s.roster);
     const getFormattedLiveMinutes = useAppStore(s => s.getFormattedLiveMinutes);
-    const isRunning = useAppStore(s => s.clock.isRunning);
+    const isRunning = useAppStore(s => s.gameClock.isRunning);
     const tactics = useAppStore(s => s.tactics);
     const formation = useAppStore(s => s.formation);
-    const { substitutionQueue, cancelSub, performSubs } = useAppStore(s => s);
+    const {
+        substitutionQueue,
+        cancelSub,
+        performSubs,
+        recordShot,
+        recordPass,
+        recordSave
+    } = useAppStore(s => s);
 
     const [sheetOpen, setSheetOpen] = useState(false);
     const [benchId, setBenchId] = useState<string | undefined>(undefined);
@@ -34,14 +41,6 @@ export default function MatchTab() {
         return () => clearInterval(id);
     }, [isRunning]);
 
-    const playerTimes = useMemo(() => {
-        const times: { [playerId: string]: number } = {};
-        roster.forEach(p => {
-            times[p.id] = getFormattedLiveMinutes(p.id);
-        });
-        return times;
-    }, [roster, getFormattedLiveMinutes, tick]);
-
     const [onFieldPlayers, setOnFieldPlayers] = useState<any[]>([]);
 
     const { startedAtSec, accumulatedSec } = useAppStore(s => s.subClock);
@@ -52,8 +51,8 @@ export default function MatchTab() {
     
 
     useEffect(() => {
-        const withMs = roster.map(p => ({ ...p, ms: playerTimes[p.id] }));
-        const onField = withMs.filter(p => p.isOnField);
+        // Ensure player objects passed to onFieldPlayers include full stat data
+        const onField = roster.filter(p => p.isOnField);
 
         const currentFormationLayout = formationLayouts[formation];
 
@@ -83,7 +82,7 @@ export default function MatchTab() {
         });
 
         setOnFieldPlayers(sortedOnField);
-    }, [roster, playerTimes, tick, tactics, formation]);
+    }, [roster, tick, tactics, formation]); // Removed playerTimes from dependencies as we now get full player object from roster
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, width: '90%', maxWidth: 600, mx: 'auto' }}>
@@ -133,13 +132,29 @@ export default function MatchTab() {
                     {onFieldPlayers.map(p => {
                         const slot = tactics.find(t => t.playerId === p.id);
                         const position = slot ? slot.id.toUpperCase() : 'N/A';
+                        const isGoalie = position === 'GK';
+
                         return (
-                            <Box key={p.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, p: 2, bgcolor: 'background.paper', mb: 1 }}>
-                                <Typography variant="body2">{p.number ? `#${p.number} ` : ''}{p.name}</Typography>
-                                <Stack direction="column" alignItems="flex-end">
-                                    <Typography variant="caption" sx={{ fontSize: '0.875rem' }}>{p.ms}</Typography>
-                                    <Typography variant="caption">{position}</Typography>
-                                </Stack>
+                            <Box key={p.id} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1, p: 2, bgcolor: 'background.paper', mb: 1 }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+                                    <Typography variant="body2">{p.number ? `#${p.number} ` : ''}{p.name}</Typography>
+                                    <Stack direction="column" alignItems="flex-end">
+                                        <Typography variant="caption" sx={{ fontSize: '0.875rem' }}>{getFormattedLiveMinutes(p.id)}</Typography>
+                                        <Typography variant="caption">{position}</Typography>
+                                    </Stack>
+                                </Box>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+                                    <ButtonGroup variant="outlined" size="small" aria-label="player stats buttons">
+                                        {isGoalie ? (
+                                            <Button onClick={() => recordSave(p.id)}>Save ({p.saves})</Button>
+                                        ) : (
+                                            <> {/* Use a Fragment to return multiple elements */}
+                                                <Button onClick={() => recordPass(p.id)}>Pass ({p.passes})</Button>
+                                                <Button onClick={() => recordShot(p.id)}>Shot ({p.shots})</Button>
+                                            </>
+                                        )}
+                                    </ButtonGroup>
+                                </Box>
                             </Box>
                         );
                     })}
