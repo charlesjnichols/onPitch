@@ -6,11 +6,16 @@ import { Button, Box, Typography, Stack, ButtonGroup } from "@mui/material";
 import Bench from "./Bench/Bench";
 import { formationLayouts } from "../store";
 import { getTotalElapsedSec } from "../utils/time";
+import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
+import PersonRemoveAlt1Icon from "@mui/icons-material/PersonRemoveAlt1";
+import ArrowRightAltIcon from "@mui/icons-material/ArrowRightAlt";
+import AddIcon from "@mui/icons-material/Add";
+import RemoveIcon from "@mui/icons-material/Remove";
 
 export default function MatchTab() {
   const roster = useAppStore((s) => s.roster);
   const getFormattedLiveMinutes = useAppStore((s) => s.getFormattedLiveMinutes);
-  const isRunning = useAppStore((s) => s.gameClock.isRunning);
+  const isRunning = useAppStore((s) => s.clock.isRunning); // Corrected to s.clock.isRunning
   const tactics = useAppStore((s) => s.tactics);
   const formation = useAppStore((s) => s.formation);
   const {
@@ -20,6 +25,9 @@ export default function MatchTab() {
     recordShot,
     recordPass,
     recordSave,
+    decrementShot,
+    decrementPass,
+    decrementSave,
   } = useAppStore((s) => s);
 
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -57,7 +65,6 @@ export default function MatchTab() {
   const showRotation = isRunning && elapsedSec > intervalSec;
 
   useEffect(() => {
-    // Ensure player objects passed to onFieldPlayers include full stat data
     const onField = roster.filter((p) => p.isOnField);
 
     const currentFormationLayout = formationLayouts[formation];
@@ -88,7 +95,7 @@ export default function MatchTab() {
     });
 
     setOnFieldPlayers(sortedOnField);
-  }, [roster, tick, tactics, formation]); // Removed playerTimes from dependencies as we now get full player object from roster
+  }, [roster, tick, tactics, formation]);
 
   return (
     <Box
@@ -145,18 +152,57 @@ export default function MatchTab() {
                   mb: 1,
                 }}
               >
-                <Typography variant="body2">
-                  {benchPlayer?.number} {benchPlayer?.name} for{" "}
-                  {onFieldPlayer?.number}
-                  {onFieldPlayer?.name}
-                </Typography>
+                {/* Modified substitution display to use icons */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                    gap: 0.5,
+                  }}
+                >
+                  <PersonAddAlt1Icon color="success" fontSize="small" />
+                  <Typography variant="body2" component="span">
+                    {benchPlayer?.number && (
+                      <Typography
+                        variant="caption"
+                        component="span"
+                        sx={{ fontWeight: "bold", mr: 0.5 }}
+                      >
+                        #{benchPlayer.number}
+                      </Typography>
+                    )}
+                    {benchPlayer?.name}
+                  </Typography>
+
+                  <ArrowRightAltIcon
+                    sx={{ mx: 0.5 }}
+                    color="action"
+                    fontSize="small"
+                  />
+
+                  <PersonRemoveAlt1Icon color="error" fontSize="small" />
+                  <Typography variant="body2" component="span">
+                    {onFieldPlayer?.number && (
+                      <Typography
+                        variant="caption"
+                        component="span"
+                        sx={{ fontWeight: "bold", mr: 0.5 }}
+                      >
+                        #{onFieldPlayer.number}
+                      </Typography>
+                    )}
+                    {onFieldPlayer?.name}
+                  </Typography>
+                </Box>
+                {/* End of modified substitution display */}
                 <Button size="small" onClick={() => cancelSub(sub)}>
                   Cancel
                 </Button>
               </Box>
             );
           })}
-        {substitutionQueue.length == 0 && (
+        {substitutionQueue.length === 0 && ( // Changed `== 0` to `=== 0` for strict equality
           <Box
             sx={{
               display: "flex",
@@ -173,6 +219,11 @@ export default function MatchTab() {
           </Box>
         )}
         <Box sx={{ display: "flex", gap: 2 }}>
+          {substitutionQueue.length > 0 && (
+            <Button variant="contained" color="primary" onClick={performSubs}>
+              Perform Substitutions
+            </Button>
+          )}
           {isRunning && (
             <Button
               variant="contained"
@@ -180,11 +231,6 @@ export default function MatchTab() {
               onClick={resetSubClock}
             >
               Reset Sub Clock
-            </Button>
-          )}
-          {substitutionQueue.length > 0 && (
-            <Button variant="contained" color="primary" onClick={performSubs}>
-              Perform Substitutions
             </Button>
           )}
         </Box>
@@ -198,12 +244,13 @@ export default function MatchTab() {
           maxWidth: 600,
         }}
       >
-        <Typography variant="subtitle1">On Field</Typography>
+        <Typography variant="subtitle1">On Pitch</Typography>
         <Box width={"100%"}>
           {onFieldPlayers.map((p) => {
             const slot = tactics.find((t) => t.playerId === p.id);
             const position = slot ? slot.id.toUpperCase() : "N/A";
-            const isGoalie = position === "GK";
+            // Check if player's positionTags includes 'GK' for goalie determination
+            const isGoalie = p.positionTags.includes("GK");
 
             return (
               <Box
@@ -246,28 +293,59 @@ export default function MatchTab() {
                     alignItems: "center",
                   }}
                 >
-                  <ButtonGroup
-                    variant="outlined"
-                    size="small"
-                    aria-label="player stats buttons"
-                  >
-                    {isGoalie ? (
+                  {/* Conditional rendering for Goalies vs. Field Players */}
+                  {isGoalie ? (
+                    <ButtonGroup
+                      variant="outlined"
+                      size="small"
+                      aria-label="goalie stats buttons"
+                    >
+                      <Button onClick={() => decrementSave(p.id)}>
+                        <RemoveIcon fontSize="small" />
+                      </Button>
                       <Button onClick={() => recordSave(p.id)}>
                         Save ({p.saves})
                       </Button>
-                    ) : (
-                      <>
-                        {" "}
-                        {/* Use a Fragment to return multiple elements */}
+                      <Button onClick={() => recordSave(p.id)}>
+                        <AddIcon fontSize="small" />
+                      </Button>
+                    </ButtonGroup>
+                  ) : (
+                    <Stack direction="row" spacing={1}>
+                      {" "}
+                      {/* Use Stack to group Pass and Shot controls */}
+                      <ButtonGroup
+                        variant="outlined"
+                        size="small"
+                        aria-label="pass stats buttons"
+                      >
+                        <Button onClick={() => decrementPass(p.id)}>
+                          <RemoveIcon fontSize="small" />
+                        </Button>
                         <Button onClick={() => recordPass(p.id)}>
                           Pass ({p.passes})
+                        </Button>
+                        <Button onClick={() => recordPass(p.id)}>
+                          <AddIcon fontSize="small" />
+                        </Button>
+                      </ButtonGroup>
+                      <ButtonGroup
+                        variant="outlined"
+                        size="small"
+                        aria-label="shot stats buttons"
+                      >
+                        <Button onClick={() => decrementShot(p.id)}>
+                          <RemoveIcon fontSize="small" />
                         </Button>
                         <Button onClick={() => recordShot(p.id)}>
                           Shot ({p.shots})
                         </Button>
-                      </>
-                    )}
-                  </ButtonGroup>
+                        <Button onClick={() => recordShot(p.id)}>
+                          <AddIcon fontSize="small" />
+                        </Button>
+                      </ButtonGroup>
+                    </Stack>
+                  )}
                 </Box>
               </Box>
             );

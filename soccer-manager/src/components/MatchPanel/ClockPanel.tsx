@@ -80,7 +80,7 @@ export default function ClockPanel() {
         {/* Changed onClick to open the confirmation dialog */}
         <Button
           variant="contained"
-          color="inherit"
+          color="secondary"
           onClick={handleOpenResetConfirm}
         >
           Reset

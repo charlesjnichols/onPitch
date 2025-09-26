@@ -155,8 +155,11 @@ export interface AppStore extends MatchState {
   resetSubClock: () => void;
   setConfig: (patch: Partial<MatchState["config"]>) => void;
   recordShot: (playerId: string) => void;
+  decrementShot: (playerId: string) => void;
   recordPass: (playerId: string) => void;
+  decrementPass: (playerId: string) => void;
   recordSave: (playerId: string) => void;
+  decrementSave: (playerId: string) => void;
 }
 
 const initialState: MatchState = {
@@ -231,6 +234,15 @@ export const useAppStore = create<AppStore>()(
           ),
         })),
 
+      decrementShot: (playerId: string) =>
+        set((s) => ({
+          roster: s.roster.map((pl) =>
+            pl.id === playerId
+              ? { ...pl, shots: Math.max(0, pl.shots - 1) }
+              : pl,
+          ),
+        })),
+
       recordPass: (playerId: string) =>
         set((s) => ({
           roster: s.roster.map((pl) =>
@@ -238,10 +250,28 @@ export const useAppStore = create<AppStore>()(
           ),
         })),
 
+      decrementPass: (playerId: string) =>
+        set((s) => ({
+          roster: s.roster.map((pl) =>
+            pl.id === playerId
+              ? { ...pl, passes: Math.max(0, pl.passes - 1) }
+              : pl,
+          ),
+        })),
+
       recordSave: (playerId: string) =>
         set((s) => ({
           roster: s.roster.map((pl) =>
             pl.id === playerId ? { ...pl, saves: pl.saves + 1 } : pl,
+          ),
+        })),
+
+      decrementSave: (playerId: string) =>
+        set((s) => ({
+          roster: s.roster.map((pl) =>
+            pl.id === playerId
+              ? { ...pl, saves: Math.max(0, pl.saves - 1) }
+              : pl,
           ),
         })),
 

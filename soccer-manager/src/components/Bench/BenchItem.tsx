@@ -53,11 +53,13 @@ function BenchItem({
         }}
       >
         <Stack direction="column">
-          <Typography variant="subtitle1" sx={{ textAlign: "left" }}>
+          <Typography sx={{ textAlign: "left" }}>
             {number ? `#${number} ` : ""}
             {name}
           </Typography>
-          <Typography variant="caption">{positionTags.join(", ")}</Typography>
+          <Typography variant="overline" color="text.secondary">
+            {positionTags.join(", ")}
+          </Typography>
         </Stack>
       </CardContent>
       <CardContent
