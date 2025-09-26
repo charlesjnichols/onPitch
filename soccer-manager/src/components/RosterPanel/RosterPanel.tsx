@@ -14,7 +14,7 @@ function RosterPanel() {
     {
       {
         setSortedRoster(
-          [...roster].sort((a, b) => a.name.localeCompare(b.name))
+          [...roster].sort((a, b) => a.name.localeCompare(b.name)),
         );
       }
     }

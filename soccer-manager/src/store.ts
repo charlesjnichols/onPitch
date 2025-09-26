@@ -196,7 +196,7 @@ export const useAppStore = create<AppStore>()(
       updatePlayer: (id, patch) =>
         set((s) => ({
           roster: s.roster.map((pl) =>
-            pl.id === id ? { ...pl, ...patch } : pl
+            pl.id === id ? { ...pl, ...patch } : pl,
           ),
         })),
 
@@ -204,7 +204,7 @@ export const useAppStore = create<AppStore>()(
         set((s) => ({
           roster: s.roster.filter((pl) => pl.id !== id),
           tactics: s.tactics.map((slot) =>
-            slot.playerId === id ? { ...slot, playerId: undefined } : slot
+            slot.playerId === id ? { ...slot, playerId: undefined } : slot,
           ),
         })),
 
@@ -213,13 +213,13 @@ export const useAppStore = create<AppStore>()(
           const currentOn = s.roster.filter((p) => p.isOnField).length;
           if (isOnField && currentOn >= s.config.maxOnField) {
             console.warn(
-              "Cannot add player: Maximum number of players on the field reached."
+              "Cannot add player: Maximum number of players on the field reached.",
             );
             return s;
           }
           return {
             roster: s.roster.map((pl) =>
-              pl.id === id ? { ...pl, isOnField } : pl
+              pl.id === id ? { ...pl, isOnField } : pl,
             ),
           };
         }),
@@ -227,21 +227,21 @@ export const useAppStore = create<AppStore>()(
       recordShot: (playerId: string) =>
         set((s) => ({
           roster: s.roster.map((pl) =>
-            pl.id === playerId ? { ...pl, shots: pl.shots + 1 } : pl
+            pl.id === playerId ? { ...pl, shots: pl.shots + 1 } : pl,
           ),
         })),
 
       recordPass: (playerId: string) =>
         set((s) => ({
           roster: s.roster.map((pl) =>
-            pl.id === playerId ? { ...pl, passes: pl.passes + 1 } : pl
+            pl.id === playerId ? { ...pl, passes: pl.passes + 1 } : pl,
           ),
         })),
 
       recordSave: (playerId: string) =>
         set((s) => ({
           roster: s.roster.map((pl) =>
-            pl.id === playerId ? { ...pl, saves: pl.saves + 1 } : pl
+            pl.id === playerId ? { ...pl, saves: pl.saves + 1 } : pl,
           ),
         })),
 
@@ -355,8 +355,12 @@ export const useAppStore = create<AppStore>()(
             const elapsedSinceLastClockStart = now - s.clock.startedAtSec;
             roster = roster.map((pl) =>
               pl.isOnField
-                ? { ...pl, minutesPlayedSec: pl.minutesPlayedSec + elapsedSinceLastClockStart }
-                : pl
+                ? {
+                    ...pl,
+                    minutesPlayedSec:
+                      pl.minutesPlayedSec + elapsedSinceLastClockStart,
+                  }
+                : pl,
             );
             // If the clock is running, reset its 'startedAtSec' to 'now'
             // so all currently on-field players (including the new one) start fresh
@@ -367,11 +371,11 @@ export const useAppStore = create<AppStore>()(
           // Step 2: Update the isOnField status for players involved in the sub
           if (outId) {
             roster = roster.map((pl) =>
-              pl.id === outId ? { ...pl, isOnField: false } : pl
+              pl.id === outId ? { ...pl, isOnField: false } : pl,
             );
           }
           roster = roster.map((pl) =>
-            pl.id === inId ? { ...pl, isOnField: true } : pl
+            pl.id === inId ? { ...pl, isOnField: true } : pl,
           );
 
           // Step 3: Enforce maxOnField rule
@@ -379,10 +383,10 @@ export const useAppStore = create<AppStore>()(
           if (onFieldCount > s.config.maxOnField) {
             // Revert the playerIn if it violates the maxOnField rule
             roster = roster.map((pl) =>
-              pl.id === inId ? { ...pl, isOnField: false } : pl
+              pl.id === inId ? { ...pl, isOnField: false } : pl,
             );
             console.warn(
-              "Cannot sub player: Maximum number of players on the field reached. Reverting substitution for player in."
+              "Cannot sub player: Maximum number of players on the field reached. Reverting substitution for player in.",
             );
             // If the sub is reverted, the clock startedAtSec should also revert
             // to what it was before this attempted sub, if it was running.
@@ -407,21 +411,20 @@ export const useAppStore = create<AppStore>()(
 
           // Step 5: Update tactics to reflect the player change in the formation
           const tactics = s.tactics.map((slot) => {
-              // If the slot had the player who is going out, put the new player in.
-              // If the slot had the player who is coming in (meaning they were already on field elsewhere),
-              // clear that slot.
-              if (slot.playerId === outId) {
-                  return { ...slot, playerId: inId };
-              } else if (slot.playerId === inId) {
-                  // This handles cases where a player is swapped from one tactical slot to another
-                  // (e.g., inId was already in a slot, now it's moving to the outId's slot).
-                  // So we clear the original slot of inId.
-                  return { ...slot, playerId: undefined };
-              } else {
-                  return slot;
-              }
+            // If the slot had the player who is going out, put the new player in.
+            // If the slot had the player who is coming in (meaning they were already on field elsewhere),
+            // clear that slot.
+            if (slot.playerId === outId) {
+              return { ...slot, playerId: inId };
+            } else if (slot.playerId === inId) {
+              // This handles cases where a player is swapped from one tactical slot to another
+              // (e.g., inId was already in a slot, now it's moving to the outId's slot).
+              // So we clear the original slot of inId.
+              return { ...slot, playerId: undefined };
+            } else {
+              return slot;
+            }
           });
-
 
           return {
             roster,
@@ -450,7 +453,7 @@ export const useAppStore = create<AppStore>()(
       moveSlot: (slotId, x, y) =>
         set((s) => ({
           tactics: s.tactics.map((slot) =>
-            slot.id === slotId ? { ...slot, x, y } : slot
+            slot.id === slotId ? { ...slot, x, y } : slot,
           ),
         })),
 
@@ -469,10 +472,12 @@ export const useAppStore = create<AppStore>()(
       benchPlayer: (playerId) =>
         set((s) => ({
           roster: s.roster.map((pl) =>
-            pl.id === playerId ? { ...pl, isOnField: false } : pl
+            pl.id === playerId ? { ...pl, isOnField: false } : pl,
           ),
           tactics: s.tactics.map((slot) =>
-            slot.playerId === playerId ? { ...slot, playerId: undefined } : slot
+            slot.playerId === playerId
+              ? { ...slot, playerId: undefined }
+              : slot,
           ),
         })),
 
@@ -495,8 +500,8 @@ export const useAppStore = create<AppStore>()(
             t.id === slotId
               ? { ...t, playerId }
               : t.playerId === playerId
-              ? { ...t, playerId: undefined }
-              : t
+                ? { ...t, playerId: undefined }
+                : t,
           );
           result.tactics = tactics;
           const now = Date.now() / 1000;
@@ -506,23 +511,23 @@ export const useAppStore = create<AppStore>()(
             roster = roster.map((pl) =>
               pl.isOnField
                 ? { ...pl, minutesPlayedSec: pl.minutesPlayedSec + elapsed }
-                : pl
+                : pl,
             );
           }
           if (prevPlayerId) {
             roster = roster.map((pl) =>
-              pl.id === prevPlayerId ? { ...pl, isOnField: false } : pl
+              pl.id === prevPlayerId ? { ...pl, isOnField: false } : pl,
             );
           }
           roster = roster.map((pl) =>
-            pl.id === playerId ? { ...pl, isOnField: true } : pl
+            pl.id === playerId ? { ...pl, isOnField: true } : pl,
           );
           if (roster.filter((p) => p.isOnField).length > s.config.maxOnField) {
             roster = roster.map((pl) =>
-              pl.id === playerId ? { ...pl, isOnField: false } : pl
+              pl.id === playerId ? { ...pl, isOnField: false } : pl,
             );
             console.warn(
-              "Cannot place player: Maximum number of players on the field reached."
+              "Cannot place player: Maximum number of players on the field reached.",
             );
             return s;
           }
@@ -566,28 +571,28 @@ export const useAppStore = create<AppStore>()(
             roster = roster.map((pl) =>
               pl.isOnField
                 ? { ...pl, minutesPlayedSec: pl.minutesPlayedSec + elapsed }
-                : pl
+                : pl,
             );
           }
           if (prev) {
             roster = roster.map((pl) =>
-              pl.id === prev ? { ...pl, isOnField: false } : pl
+              pl.id === prev ? { ...pl, isOnField: false } : pl,
             );
           }
           roster = roster.map((pl) =>
-            pl.id === benchPlayerId ? { ...pl, isOnField: true } : pl
+            pl.id === benchPlayerId ? { ...pl, isOnField: true } : pl,
           );
           if (roster.filter((p) => p.isOnField).length > s.config.maxOnField) {
             roster = roster.map((pl) =>
-              pl.id === benchPlayerId ? { ...pl, isOnField: false } : pl
+              pl.id === benchPlayerId ? { ...pl, isOnField: false } : pl,
             );
           }
           const tactics = s.tactics.map((t) =>
             t.id === slotId
               ? { ...t, playerId: benchPlayerId }
               : t.playerId === benchPlayerId
-              ? { ...t, playerId: undefined }
-              : t
+                ? { ...t, playerId: undefined }
+                : t,
           );
           const sub: SubEvent = {
             id: uid(),
@@ -637,7 +642,7 @@ export const useAppStore = create<AppStore>()(
             passes: 0,
             saves: 0,
           })),
-        config: s.config,
+          config: s.config,
         })),
 
       enqueueSub: (sub) =>
@@ -648,14 +653,14 @@ export const useAppStore = create<AppStore>()(
           // Cancel existing subs involving the incoming player
           newQueue = newQueue.filter(
             (existingSub) =>
-              existingSub.inId !== inId && existingSub.outId !== inId
-);
+              existingSub.inId !== inId && existingSub.outId !== inId,
+          );
 
           if (outId) {
             // Cancel existing subs involving the outgoing player
             newQueue = newQueue.filter(
               (existingSub) =>
-                existingSub.inId !== outId && existingSub.outId !== outId
+                existingSub.inId !== outId && existingSub.outId !== outId,
             );
           }
 
@@ -665,7 +670,7 @@ export const useAppStore = create<AppStore>()(
       cancelSub: (subToRemove) =>
         set((state) => ({
           substitutionQueue: state.substitutionQueue.filter(
-            (sub) => sub !== subToRemove
+            (sub) => sub !== subToRemove,
           ),
         })),
 
@@ -700,8 +705,6 @@ export const useAppStore = create<AppStore>()(
           }
         };
       },
-    }
-  )
+    },
+  ),
 );
-
-

@@ -16,13 +16,22 @@ export default function MatchHelp() {
       </Typography>
       <List>
         <ListItem>
-          <ListItemText primary="Clock Controls:" secondary="Start, stop, and reset the match clock." />
+          <ListItemText
+            primary="Clock Controls:"
+            secondary="Start, stop, and reset the match clock."
+          />
         </ListItem>
         <ListItem>
-          <ListItemText primary="Player Management:" secondary="View players on the field and on the bench." />
+          <ListItemText
+            primary="Player Management:"
+            secondary="View players on the field and on the bench."
+          />
         </ListItem>
         <ListItem>
-          <ListItemText primary="Substitution Tracking:" secondary="Track substitutions made during the match." />
+          <ListItemText
+            primary="Substitution Tracking:"
+            secondary="Track substitutions made during the match."
+          />
         </ListItem>
       </List>
 
@@ -37,7 +46,10 @@ export default function MatchHelp() {
           <ListItemText primary="Stop:" secondary="Pauses the match clock." />
         </ListItem>
         <ListItem>
-          <ListItemText primary="Reset:" secondary="Resets the match clock to zero." />
+          <ListItemText
+            primary="Reset:"
+            secondary="Resets the match clock to zero."
+          />
         </ListItem>
       </List>
 
@@ -46,16 +58,28 @@ export default function MatchHelp() {
       </Typography>
       <List>
         <ListItem>
-          <ListItemText primary="On Field Players:" secondary="Displays the players currently on the field." />
+          <ListItemText
+            primary="On Field Players:"
+            secondary="Displays the players currently on the field."
+          />
         </ListItem>
         <ListItem>
-          <ListItemText primary="Bench Players:" secondary="Displays the players currently on the bench." />
+          <ListItemText
+            primary="Bench Players:"
+            secondary="Displays the players currently on the bench."
+          />
         </ListItem>
         <ListItem>
-          <ListItemText primary="Minutes:" secondary="The number of minutes each player has played." />
+          <ListItemText
+            primary="Minutes:"
+            secondary="The number of minutes each player has played."
+          />
         </ListItem>
         <ListItem>
-          <ListItemText primary="Preferred Positions:" secondary="The preferred positions of each player." />
+          <ListItemText
+            primary="Preferred Positions:"
+            secondary="The preferred positions of each player."
+          />
         </ListItem>
       </List>
 
@@ -64,7 +88,10 @@ export default function MatchHelp() {
       </Typography>
       <List>
         <ListItem>
-          <ListItemText primary="Tracking:" secondary="Explains how substitutions are recorded and managed." />
+          <ListItemText
+            primary="Tracking:"
+            secondary="Explains how substitutions are recorded and managed."
+          />
         </ListItem>
       </List>
     </Box>

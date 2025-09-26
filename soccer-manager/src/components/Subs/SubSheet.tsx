@@ -77,7 +77,7 @@ export default function SubSheet({
       };
 
     const onFieldIds = new Set(
-      roster.filter((p) => p.isOnField).map((p) => p.id)
+      roster.filter((p) => p.isOnField).map((p) => p.id),
     );
     const playerIdToSlotId = new Map<string, string>();
 

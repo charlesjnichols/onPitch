@@ -1,9 +1,19 @@
 import type { FormationId } from "./store";
 
 export type PositionTag =
-  | 'GK' | 'LB' | 'RB' | 'CB' | 'LWB' | 'RWB'
-  | 'CDM' | 'CM' | 'CAM'
-  | 'LW' | 'RW' | 'CF' | 'ST';
+  | "GK"
+  | "LB"
+  | "RB"
+  | "CB"
+  | "LWB"
+  | "RWB"
+  | "CDM"
+  | "CM"
+  | "CAM"
+  | "LW"
+  | "RW"
+  | "CF"
+  | "ST";
 
 export interface Player {
   id: string;

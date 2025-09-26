@@ -8,15 +8,13 @@
   },
   "runArgs": [
     "--add-host=host.docker.internal:host-gateway",
-    "-p", "3000:3000"
+    "-p",
+    "3000:3000"
   ],
   "features": {
     "ghcr.io/devcontainers/features/node:1": {}
   },
-  "forwardPorts": [
-    3000,
-    5173
-  ],
+  "forwardPorts": [3000, 5173],
   "customizations": {
     "vscode": {
       "extensions": [

@@ -1,7 +1,7 @@
 import { Box, Typography, useTheme } from "@mui/material";
 import { useAppStore } from "../../store";
 import { formatClock } from "../../utils/time";
-import { styled } from '@mui/system';
+import { styled } from "@mui/system";
 import type { FormationId } from "../../store";
 
 interface PitchProps {
@@ -15,7 +15,7 @@ interface PitchContainerProps extends React.ComponentProps<typeof Box> {
 
 // Styled Box component for the Pitch container
 const PitchContainer = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'formation',
+  shouldForwardProp: (prop) => prop !== "formation",
 })<PitchContainerProps>(({ theme, formation }) => {
   let gridTemplateAreas;
 
@@ -41,7 +41,7 @@ const PitchContainer = styled(Box, {
         ". lw . cm1 . . cm2 . rw .",
         ". . . . . . . . . .",
         ". . . st1 .  . st2 . . .",
-        
+
         ". . . . . . . . . .",
       ];
       break;
@@ -121,11 +121,11 @@ const PitchContainer = styled(Box, {
       ];
   }
 
-  return ({
+  return {
     borderRadius: "12px",
-    border: `1px solid ${theme.palette.mode === 'dark' ? '#444' : '#ccc'}`,
+    border: `1px solid ${theme.palette.mode === "dark" ? "#444" : "#ccc"}`,
     background:
-      theme.palette.mode === 'dark'
+      theme.palette.mode === "dark"
         ? "linear-gradient(to bottom, rgba(10, 27, 17, 0.6), rgba(50, 50, 50, 0.6))"
         : "linear-gradient(to bottom, rgba(180, 200, 180, 0.6), rgba(220, 230, 220, 0.6))",
     position: "relative",
@@ -137,14 +137,14 @@ const PitchContainer = styled(Box, {
     gridTemplateRows: "repeat(10, 1fr)",
     gridTemplateColumns: "repeat(10, 1fr)",
     gridGap: "4px",
-    gridTemplateAreas: gridTemplateAreas.map(row => `"${row}"`).join('\n'),
-  })
+    gridTemplateAreas: gridTemplateAreas.map((row) => `"${row}"`).join("\n"),
+  };
 });
 
 const PitchInner = styled(Box)(({ theme }) => ({
   position: "absolute",
   inset: 12,
-  border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)'}`,
+  border: `1px solid ${theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.6)" : "rgba(0, 0, 0, 0.6)"}`,
   borderRadius: "8px",
 }));
 
@@ -154,7 +154,10 @@ const PitchCenterLine = styled(Box)(({ theme }) => ({
   top: "50%",
   height: "1px",
   width: "calc(100%)",
-  bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)',
+  bgcolor:
+    theme.palette.mode === "dark"
+      ? "rgba(255, 255, 255, 0.6)"
+      : "rgba(0, 0, 0, 0.6)",
 }));
 
 const PitchGoalBox = styled(Box)(({ theme }) => ({
@@ -162,7 +165,7 @@ const PitchGoalBox = styled(Box)(({ theme }) => ({
   left: "calc(50% - 80px)",
   height: "50px",
   width: "160px",
-  border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)'}`,
+  border: `1px solid ${theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.6)" : "rgba(0, 0, 0, 0.6)"}`,
 }));
 
 const PitchSmallBox = styled(Box)(({ theme }) => ({
@@ -170,7 +173,7 @@ const PitchSmallBox = styled(Box)(({ theme }) => ({
   left: "calc(50% - 30px)",
   height: "20px",
   width: "60px",
-  border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)'}`,
+  border: `1px solid ${theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.6)" : "rgba(0, 0, 0, 0.6)"}`,
 }));
 
 export default function Pitch({
@@ -184,11 +187,7 @@ export default function Pitch({
   const formation = useAppStore((s) => s.formation);
 
   return (
-    <PitchContainer
-      formation={formation}
-      sx={{
-      }}
-    >
+    <PitchContainer formation={formation} sx={{}}>
       <PitchInner>
         <PitchCenterLine />
         <PitchGoalBox sx={{ top: 0 }} />
@@ -201,8 +200,8 @@ export default function Pitch({
           const player = roster.find((p) => p.id === slot.playerId);
           const aria = player
             ? `${slot.id.toUpperCase()} — ${formatClock(
-              getLiveMinutesSec(player.id)
-            )} played`
+                getLiveMinutesSec(player.id),
+              )} played`
             : `${slot.id.toUpperCase()} — empty`;
           const isSelected = selectedSlotId === slot.id;
           return (
@@ -214,8 +213,8 @@ export default function Pitch({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                overflow: 'visible', // Add overflow: visible
-                position: 'relative', // Add position: relative
+                overflow: "visible", // Add overflow: visible
+                position: "relative", // Add position: relative
               }}
             >
               <Box
@@ -247,7 +246,9 @@ export default function Pitch({
                   if (isSelected) {
                     setSelectedSlotId(undefined);
                   } else if (selectedSlotId) {
-                    const selectedSlot = tactics.find((s) => s.id === selectedSlotId);
+                    const selectedSlot = tactics.find(
+                      (s) => s.id === selectedSlotId,
+                    );
 
                     if (selectedSlot?.playerId && slot.playerId) {
                       useAppStore.setState((state) => ({
@@ -256,17 +257,19 @@ export default function Pitch({
                             ? { ...t, playerId: selectedSlot.playerId }
                             : t.id === selectedSlot.id
                               ? { ...t, playerId: slot.playerId }
-                              : t
+                              : t,
                         ),
                       }));
                       setSelectedSlotId(undefined);
                     } else if (selectedSlot?.playerId && !slot.playerId) {
                       useAppStore.setState((state) => ({
-                        tactics: state.tactics.map((t) => t.id === slot.id
-                          ? { ...t, playerId: selectedSlot.playerId }
-                          : t.id === selectedSlot.id
-                            ? { ...t, playerId: undefined }
-                            : t),
+                        tactics: state.tactics.map((t) =>
+                          t.id === slot.id
+                            ? { ...t, playerId: selectedSlot.playerId }
+                            : t.id === selectedSlot.id
+                              ? { ...t, playerId: undefined }
+                              : t,
+                        ),
                       }));
                       setSelectedSlotId(undefined);
                     } else {
@@ -302,27 +305,34 @@ export default function Pitch({
                 >
                   {slot.id.toUpperCase()}
                 </Box>
-              
-              {player && (
-                <Typography
-                  variant="caption"
-                  sx={{
-                    position: "absolute",
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    bottom: "0px",
-                    mb: 1,
-                    whiteSpace: "nowrap",
-                    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.7)' : 'rgba(255, 255, 255, 0.7)',
-                    padding: "2px 4px",
-                    borderRadius: "4px",
-                    color: theme.palette.mode === 'dark' ? theme.palette.text.primary : theme.palette.text.primary,
-                    zIndex: 2, // Add z-index: 2
-                  }}
-                >
-                  {player.number ? `#${player.number}` : ""}&nbsp;{player.name}
-                </Typography>
-              )}
+
+                {player && (
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      position: "absolute",
+                      left: "50%",
+                      transform: "translateX(-50%)",
+                      bottom: "0px",
+                      mb: 1,
+                      whiteSpace: "nowrap",
+                      backgroundColor:
+                        theme.palette.mode === "dark"
+                          ? "rgba(0, 0, 0, 0.7)"
+                          : "rgba(255, 255, 255, 0.7)",
+                      padding: "2px 4px",
+                      borderRadius: "4px",
+                      color:
+                        theme.palette.mode === "dark"
+                          ? theme.palette.text.primary
+                          : theme.palette.text.primary,
+                      zIndex: 2, // Add z-index: 2
+                    }}
+                  >
+                    {player.number ? `#${player.number}` : ""}&nbsp;
+                    {player.name}
+                  </Typography>
+                )}
               </Box>
             </Box>
           );

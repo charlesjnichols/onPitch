@@ -1,34 +1,78 @@
-import React from 'react'
-import { Box, Button, useTheme } from '@mui/material'
+import React from "react";
+import { Box, Button, useTheme } from "@mui/material";
 
-type Props = { children: React.ReactNode }
+type Props = { children: React.ReactNode };
 
-type State = { hasError: boolean; error?: any }
+type State = { hasError: boolean; error?: any };
 
 export class ErrorBoundary extends React.Component<Props, State> {
-  state: State = { hasError: false }
+  state: State = { hasError: false };
 
   static getDerivedStateFromError(error: any): State {
-    return { hasError: true, error }
+    return { hasError: true, error };
   }
 
   componentDidCatch(error: any, info: any) {
-    console.error('[SubTracker] Uncaught error:', error, info)
+    console.error("[SubTracker] Uncaught error:", error, info);
   }
 
   render() {
     const theme = useTheme();
     if (this.state.hasError) {
       return (
-        <Box sx={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 6, textAlign: 'center', color: theme.palette.text.secondary, backgroundColor: theme.palette.background.default }}>
-          <Box sx={{ maxWidth: '480px', display: 'flex', flexDirection: 'column', gap: 3 }}>
-            <Box sx={{ fontSize: '1.25rem', fontWeight: 'semibold', color: theme.palette.text.primary }}>Something went wrong</Box>
-            <Box sx={{ fontSize: '0.875rem', color: theme.palette.text.secondary }}>Please refresh the page. If the issue persists, use Export Debug and share the file.</Box>
-            <Button variant="outlined" sx={{ padding: 2, borderRadius: 1, border: `1px solid ${theme.palette.text.secondary}`, backgroundColor: theme.palette.background.paper, fontSize: '0.875rem', color: theme.palette.text.secondary }} onClick={() => location.reload()}>Reload</Button>
+        <Box
+          sx={{
+            minHeight: "100dvh",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 6,
+            textAlign: "center",
+            color: theme.palette.text.secondary,
+            backgroundColor: theme.palette.background.default,
+          }}
+        >
+          <Box
+            sx={{
+              maxWidth: "480px",
+              display: "flex",
+              flexDirection: "column",
+              gap: 3,
+            }}
+          >
+            <Box
+              sx={{
+                fontSize: "1.25rem",
+                fontWeight: "semibold",
+                color: theme.palette.text.primary,
+              }}
+            >
+              Something went wrong
+            </Box>
+            <Box
+              sx={{ fontSize: "0.875rem", color: theme.palette.text.secondary }}
+            >
+              Please refresh the page. If the issue persists, use Export Debug
+              and share the file.
+            </Box>
+            <Button
+              variant="outlined"
+              sx={{
+                padding: 2,
+                borderRadius: 1,
+                border: `1px solid ${theme.palette.text.secondary}`,
+                backgroundColor: theme.palette.background.paper,
+                fontSize: "0.875rem",
+                color: theme.palette.text.secondary,
+              }}
+              onClick={() => location.reload()}
+            >
+              Reload
+            </Button>
           </Box>
         </Box>
-      )
+      );
     }
-    return this.props.children
+    return this.props.children;
   }
 }
