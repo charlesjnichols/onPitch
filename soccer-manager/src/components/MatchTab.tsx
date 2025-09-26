@@ -77,31 +77,31 @@ export default function MatchTab() {
   useEffect(() => {
     const onField = roster.filter((p) => p.isOnField);
 
-    const currentFormationLayout = formationLayouts[formation];
+    // const currentFormationLayout = formationLayouts[formation];
 
-    const positionOrder = Object.entries(currentFormationLayout)
-      .sort(([, a], [, b]) => a.order - b.order)
-      .map(([positionId]) => positionId.toUpperCase());
+    // const positionOrder = Object.entries(currentFormationLayout)
+    //   .sort(([, a], [, b]) => a.order - b.order)
+    //   .map(([positionId]) => positionId.toUpperCase());
 
     const sortedOnField = [...onField].sort((a, b) => {
-      const slotA = tactics.find((t) => t.playerId === a.id);
-      const slotB = tactics.find((t) => t.playerId === b.id);
+      // const slotA = tactics.find((t) => t.playerId === a.id);
+      // const slotB = tactics.find((t) => t.playerId === b.id);
 
-      const positionA = slotA ? slotA.id.toUpperCase() : "N/A";
-      const positionB = slotB ? slotB.id.toUpperCase() : "N/A";
+      // const positionA = slotA ? slotA.id.toUpperCase() : "N/A";
+      // const positionB = slotB ? slotB.id.toUpperCase() : "N/A";
 
-      const indexA = positionOrder.indexOf(positionA);
-      const indexB = positionOrder.indexOf(positionB);
+      // const indexA = positionOrder.indexOf(positionA);
+      // const indexB = positionOrder.indexOf(positionB);
 
-      if (indexA !== -1 && indexB !== -1) {
-        return indexA - indexB;
-      } else if (indexA !== -1) {
-        return -1;
-      } else if (indexB !== -1) {
-        return 1;
-      } else {
+      // if (indexA !== -1 && indexB !== -1) {
+      //   return indexA - indexB;
+      // } else if (indexA !== -1) {
+      //   return -1;
+      // } else if (indexB !== -1) {
+      //   return 1;
+      // } else {
         return a.name.localeCompare(b.name);
-      }
+      // }
     });
 
     setOnFieldPlayers(sortedOnField);
@@ -274,7 +274,7 @@ export default function MatchTab() {
           {onFieldPlayers.map((p) => {
             const slot = tactics.find((t) => t.playerId === p.id);
             const position = slot ? slot.id.toUpperCase() : "N/A";
-            const isGoalie = p.positionTags.includes("GK");
+            const isGoalie = position ==="GK";
 
             return (
               <Box
