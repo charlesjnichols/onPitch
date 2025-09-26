@@ -50,11 +50,11 @@ const PitchContainer = styled(Box, {
         ". . . . . . . . . .",
         "gk gk gk gk gk gk gk gk gk gk",
         ". . lb . cb cb . rb . .",
-        ". . . . cdm cdm . . . .",
         ". . . . . . . . . .",
-        ". lw . cm1 . . cm2 . rw .",
+        ". . . cm2 . . cm3 . . .",
+        ". lwb . . cm1 cm1 . . rwb .",
         ". . . . . . . . . .",
-        ". . st1 . . . . st2 . .",
+        ". . . st1 . . st2 . . .",
         ". . . . . . . . . .",
       ];
       break;
