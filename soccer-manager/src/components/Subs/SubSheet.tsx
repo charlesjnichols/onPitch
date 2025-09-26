@@ -1,11 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import BottomSheet from "../MatchPanel/BottomSheet";
 import { useAppStore } from "../../store";
 import { SLOT_ELIGIBLE_TAGS } from "../../utils/positions";
-import { Box, Typography, Button } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import BenchItem from "../Bench/BenchItem";
 import type { Player } from "../../types";
-import { formationLayouts } from '../../store';
 
 interface SubSheetProps {
   open: boolean;
@@ -108,39 +107,16 @@ export default function SubSheet({
         ineligiblePlayers.push(p);
       }
     }
-    // Get the layout for the current formation
-    const currentFormationLayout = formationLayouts[formation];
-
-    // Define the desired order of positions based on the order property in the formation layout
-    const positionOrder = Object.entries(currentFormationLayout)
-      .sort(([, a], [, b]) => a.order - b.order)
-      .map(([positionId]) => positionId.toUpperCase());
 
     const sortFn = (a: Player, b: Player) => {
-      const indexA = positionOrder.indexOf(tactics.find(t => t.playerId === a.id)?.id.toUpperCase() || 'N/A');
-      const indexB = positionOrder.indexOf(tactics.find(t => t.playerId === b.id)?.id.toUpperCase() || 'N/A');
-
-      if (indexA !== -1 && indexB !== -1) {
-        return indexA - indexB; // Sort by position order if both positions are in the order array
-      } else if (indexA !== -1) {
-        return -1; // a comes before b if only a's position is in the order array
-      } else if (indexB !== -1) {
-        return 1; // b comes before a if only b's position is in the order array
-      } else {
-        const timeDiff = getLiveMinutesSec(b.id) - getLiveMinutesSec(a.id);
-        if (timeDiff !== 0) {
-          return timeDiff; // Sort by time
-        }
-        //if time is equal, then sort by number
-        return (a.number || 0) - (b.number || 0); // Sort by number
-      }
+      return a.name.localeCompare(b.name); // Sort by name
     };
 
     return {
       eligible: eligiblePlayers.sort(sortFn).slice(0, 8),
       ineligible: ineligiblePlayers.sort(sortFn).slice(0, 8),
     };
-  }, [roster, tactics, benchPlayerId, getLiveMinutesSec, formation, formationLayouts]);
+  }, [roster, tactics, benchPlayerId]);
 
   return (
     <BottomSheet

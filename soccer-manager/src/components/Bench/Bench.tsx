@@ -18,7 +18,7 @@ export default function Bench({ selectedSlotId, onBenchClick }: BenchProps) {
 
     useEffect(() => {
         const bench = roster.filter(p => !p.isOnField);
-        setSortedBenchPlayers([...bench].sort((a, b) => (a.number || 0) - (b.number || 0)));
+        setSortedBenchPlayers([...bench].sort((a, b) => a.name.localeCompare(b.name)));
     }, [roster]);
 
     const benchPlayers = useMemo(() => sortedBenchPlayers, [sortedBenchPlayers]);

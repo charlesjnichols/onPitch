@@ -6,7 +6,6 @@ import { Box, Typography, Button } from '@mui/material';
 export default function ClockPanel() {
   const { isRunning, startedAtSec, accumulatedSec } = useAppStore(s => s.clock);
   const { startedAtSec: subStartedAtSec, accumulatedSec: subAccumulatedSec } = useAppStore(s => s.subClock);
-
   const startClock = useAppStore(s => s.startClock);
   const pauseClock = useAppStore(s => s.pauseClock);
   const resetClock = useAppStore(s => s.resetClock);
@@ -24,9 +23,9 @@ export default function ClockPanel() {
   const subFormattedTime = formatClock(Math.floor(subElapsedSec));
 
   return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 2, alignItems: 'center' }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 2, alignItems: 'center' }}>
       <Typography variant="h4">{formattedTime}</Typography>
-            <Typography>Sub Clock: {subFormattedTime}</Typography>
+      <Typography>Sub Clock: {subFormattedTime}</Typography>
             <Box sx={{ display: 'flex', gap: 1 }}>
             {!isRunning ? (
                     <Button variant="contained" color="success" onClick={startClock}>Start</Button>
@@ -35,7 +34,7 @@ export default function ClockPanel() {
             )}
                 <Button variant="contained" color="inherit" onClick={resetClock}>Reset</Button>
             </Box>
-        </Box>
+    </Box>
     );
 }
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { useMediaQuery, IconButton, Tooltip } from '@mui/material';
+import { useMediaQuery, IconButton, Tooltip, Modal } from '@mui/material';
 import CssBaseline from '@mui/material/CssBaseline';
 import RosterTab from './components/RosterTab';
 import LineupTab from './components/LineupTab';
@@ -9,10 +9,13 @@ import HelpTab from './components/HelpTab';
 import { Box, Tabs, Tab, useTheme } from '@mui/material';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
+import SettingsIcon from '@mui/icons-material/Settings';
+import SettingsPanel from './components/SettingsPanel';
 
 function App() {
     const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
     const [mode, setMode] = useState<'light' | 'dark'>(prefersDarkMode ? 'dark' : 'light');
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
     const theme = React.useMemo(
         () =>
@@ -51,6 +54,9 @@ function App() {
         [],
     );
 
+    const handleOpenSettings = () => setIsSettingsOpen(true);
+    const handleCloseSettings = () => setIsSettingsOpen(false);
+
     const currentTheme = useTheme();
 
     return (
@@ -65,11 +71,18 @@ function App() {
                             <Tab label="Match" />
                             <Tab label="Help" />
                         </Tabs>
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <Tooltip title="Toggle light/dark mode">
                             <IconButton sx={{ ml: 1 }} onClick={colorMode.toggleColorMode} color="inherit">
                                 {currentTheme.palette.mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
                             </IconButton>
                         </Tooltip>
+                            <Tooltip title="Settings">
+                                <IconButton sx={{ ml: 1 }} onClick={handleOpenSettings} color="inherit">
+                                    <SettingsIcon />
+                                </IconButton>
+                            </Tooltip>
+                        </Box>
                     </Box>
                 </Box>
                 <Box sx={{ margin: '0 auto', py: `${6}px`, spacing: 6 }}>
@@ -85,7 +98,27 @@ function App() {
                     {tab === 3 && (
                         <HelpTab />
                     )}
-                </Box>
+            </Box>
+                <Modal
+                    open={isSettingsOpen}
+                    onClose={handleCloseSettings}
+                    aria-labelledby="settings-modal-title"
+                    aria-describedby="settings-modal-description"
+                >
+                    <Box sx={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        width: 400,
+                        bgcolor: 'background.paper',
+                        border: '2px solid #000',
+                        boxShadow: 24,
+                        p: 4,
+                    }}>
+                        <SettingsPanel onClose={handleCloseSettings} />
+                    </Box>
+                </Modal>
             </Box>
         </ThemeProvider>
     );

@@ -11,7 +11,7 @@ function RosterPanel() {
   const [sortedRoster, setSortedRoster] = useState<Player[]>([]);
 
   useEffect(() => {
-    setSortedRoster([...roster].sort((a, b) => (a.number || 0) - (b.number || 0)));
+    {{ setSortedRoster([...roster].sort((a, b) => a.name.localeCompare(b.name))); }}
   }, [roster]);
 
   const handleAddPlayer = (name: string) => {

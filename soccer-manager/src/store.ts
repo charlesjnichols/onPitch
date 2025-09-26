@@ -100,6 +100,7 @@ export interface AppStore extends MatchState {
   startClock: () => void;
   pauseClock: () => void;
   resetClock: () => void;
+  setClock: (newTimeInSeconds: number) => void;
   makeSub: (inId: string, outId?: string) => void;
   assignPlayerToSlot: (slotId: string, playerId?: string) => void;
   moveSlot: (slotId: string, x: number, y: number) => void;
@@ -119,6 +120,7 @@ export interface AppStore extends MatchState {
   performSubs: () => void;
   subClock: ClockState;
   resetSubClock: () => void;
+  setConfig: (patch: Partial<MatchState["config"]>) => void;
 }
 
 const initialState: MatchState = {
@@ -127,7 +129,7 @@ const initialState: MatchState = {
   tactics: [],
   formation: "4-3-3",
   clock: { isRunning: false, accumulatedSec: 0 },
-  config: { maxOnField: 11, rotationIntervalMinutes: 1 },
+  config: { maxOnField: 11, rotationIntervalMinutes: 10, matchTimeMinutes: 90 },
 };
 
 export const useAppStore = create<AppStore>()(
@@ -240,9 +242,17 @@ export const useAppStore = create<AppStore>()(
             accumulatedSec: 0,
           },
           subClock: {
-            isRunning: s.subClock.isRunning,
-            startedAtSec: Date.now() / 1000,
+            isRunning: false,
+            startedAtSec: undefined,
             accumulatedSec: 0,
+          },
+        })),
+      setClock: (newTimeInSeconds) =>
+        set(() => ({
+          clock: {
+            isRunning: false,
+            startedAtSec: undefined,
+            accumulatedSec: newTimeInSeconds,
           },
         })),
 
@@ -509,6 +519,7 @@ export const useAppStore = create<AppStore>()(
             minutesPlayedSec: 0,
             isOnField: false,
           })),
+        config: s.config,
         })),
 
       enqueueSub: (sub) =>
@@ -520,7 +531,7 @@ export const useAppStore = create<AppStore>()(
           newQueue = newQueue.filter(
             (existingSub) =>
               existingSub.inId !== inId && existingSub.outId !== inId
-          );
+);
 
           if (outId) {
             // Cancel existing subs involving the outgoing player
@@ -547,6 +558,7 @@ export const useAppStore = create<AppStore>()(
         });
         set({ substitutionQueue: [] });
       },
+      setConfig: (patch) => set((s) => ({ config: { ...s.config, ...patch } })),
     }),
     {
       name: "soccer-manager",

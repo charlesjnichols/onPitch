@@ -25,6 +25,7 @@ export interface SubEvent {
 export interface MatchConfig {
   maxOnField: number; // default 11
   rotationIntervalMinutes: number; // banner reminder
+  matchTimeMinutes: number;
 }
 
 export interface MatchClockState {

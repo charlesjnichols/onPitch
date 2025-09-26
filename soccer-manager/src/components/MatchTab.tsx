@@ -46,7 +46,6 @@ export default function MatchTab() {
 
     const { startedAtSec, accumulatedSec } = useAppStore(s => s.subClock);
     const elapsedSec = useMemo(() => getTotalElapsedSec(isRunning, startedAtSec, accumulatedSec), [isRunning, startedAtSec, accumulatedSec, tick]);
-    const formattedTime = formatClock(Math.floor(elapsedSec));
 
     const intervalSec = rotationIntervalMinutes * 60;
     const showRotation = isRunning && elapsedSec > intervalSec;
@@ -79,11 +78,7 @@ export default function MatchTab() {
             } else if (indexB !== -1) {
                 return 1;
             } else {
-                if (b.ms - a.ms !== 0) {
-                    return b.ms - a.ms;
-                } else {
-                    return (a.number || 0) - (b.number || 0);
-                }
+                return a.name.localeCompare(b.name);
             }
         });
 
@@ -96,11 +91,9 @@ export default function MatchTab() {
                 <ClockPanel />
             </Box>
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', maxWidth: 600 }}>
-                {showRotation ? (
+                {showRotation && (
                     <Typography variant="subtitle1">Rotate Players Now!</Typography>
-                    ) : (
-                    <Typography variant="subtitle1">Substitution Queue</Typography>
-                )}
+                    )}
 
                 {substitutionQueue.length > 0 && (
                     substitutionQueue.map((sub, index) => {
