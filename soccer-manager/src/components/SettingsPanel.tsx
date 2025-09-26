@@ -12,6 +12,7 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
   const [matchTimeMinutes, setMatchTimeMinutes] = useState<number>(config.matchTimeMinutes);
   const [rotationIntervalMinutes, setRotationIntervalMinutes] = useState<number>(config.rotationIntervalMinutes);
   const [maxOnField, setMaxOnField] = useState<number>(config.maxOnField);
+  const [gameClockMinutes, setGameClockMinutes] = useState<number>(0);
 
   const handleSaveConfig = () => {
     setConfig({
@@ -19,6 +20,7 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
       rotationIntervalMinutes,
       maxOnField,
     });
+    useAppStore.setState({clock: {isRunning: false, accumulatedSec: gameClockMinutes * 60}});
     onClose(); // Close the modal after saving
   };
 
@@ -45,6 +47,13 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
         size="small"
         value={maxOnField}
         onChange={(e) => setMaxOnField(Number(e.target.value))}
+      />
+       <TextField
+        label="Game Clock (minutes)"
+        type="number"
+        size="small"
+        value={gameClockMinutes}
+        onChange={(e) => setGameClockMinutes(Number(e.target.value))}
       />
       <Box sx={{ display: 'flex', gap: 1 }}>
         <Button variant="contained" color="primary" onClick={handleSaveConfig}>

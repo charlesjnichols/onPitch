@@ -38,8 +38,7 @@ export interface MatchClockState {
 
 export interface TacticsSlot {
   id: string;
-  x: number; // 0..1 from left
-  y: number; // 0..1 from top
+  gridArea: string;
   playerId?: string;
 }
 

@@ -1,11 +1,177 @@
 import { Box, Typography, useTheme } from "@mui/material";
 import { useAppStore } from "../../store";
 import { formatClock } from "../../utils/time";
+import { styled } from '@mui/system';
+import type { FormationId } from "../../store";
 
 interface PitchProps {
   selectedSlotId: string | undefined;
   setSelectedSlotId: (slotId: string | undefined) => void;
 }
+
+interface PitchContainerProps extends React.ComponentProps<typeof Box> {
+  formation: FormationId;
+}
+
+// Styled Box component for the Pitch container
+const PitchContainer = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'formation',
+})<PitchContainerProps>(({ theme, formation }) => {
+  let gridTemplateAreas;
+
+  switch (formation) {
+    case "4-3-3":
+      gridTemplateAreas = [
+        ". . . . . . . . . .",
+        "gk gk gk gk gk gk gk gk gk gk",
+        ". lb . lcb . . rcb . rb .",
+        ". . . . . . . . . .",
+        ". . lcm . cm cm . rcm . .",
+        ". . . . . . . . . .",
+        ". . lw . st st . rw . .",
+        ". . . . . . . . . .",
+      ];
+      break;
+    case "4-4-2":
+      gridTemplateAreas = [
+        ". . . . . . . . . .",
+        "gk gk gk gk gk gk gk gk gk gk",
+        ". lb . lcb . . rcb . rb .",
+        ". . . . . . . . . .",
+        ". lw . cm1 . . cm2 . rw .",
+        ". . . . . . . . . .",
+        ". . . st1 .  . st2 . . .",
+        
+        ". . . . . . . . . .",
+      ];
+      break;
+    case "3-5-2":
+      gridTemplateAreas = [
+        ". . . . . . . . . .",
+        "gk gk gk gk gk gk gk gk gk gk",
+        ". . lb . cb cb . rb . .",
+        ". . . . cdm cdm . . . .",
+        ". . . . . . . . . .",
+        ". lcm . cm1 . . cm2 . rcm .",
+        ". . . . . . . . . .",
+        ". . st1 . . . . st2 . .",
+        ". . . . . . . . . .",
+      ];
+      break;
+    case "4-4-2 (Diamond)":
+      gridTemplateAreas = [
+        ". . . . . . . . . .",
+        "gk gk gk gk gk gk gk gk gk gk",
+        ". lb . lcb . . rcb . rb .",
+        ". . . . cdm cdm . . . .",
+        ". . lw . . . . rw . .",
+        ". . . . cam cam . . . .",
+        ". . . . . . . . . .",
+        ". . . st1 . . st2 . . .",
+        ". . . . . . . . . .",
+      ];
+      break;
+    case "4-3-1 (9)":
+      gridTemplateAreas = [
+        ". . . . . . . . . .",
+        "gk gk gk gk gk gk gk gk gk gk",
+        ". lb . lcb . . rcb . rb .",
+        ". . . . cdm cdm . . . .",
+        ". . lw . . . . rw . .",
+        ". . . . . . . . . .",
+        ". . . . st1 st1 . . . .",
+      ];
+      break;
+    case "3-2-3 (9)":
+      gridTemplateAreas = [
+        ". . . . . . . . . .",
+        "gk gk gk gk gk gk gk gk gk gk",
+        ". lb . . cb cb . . rb .",
+        ". . . . . . . . . .",
+        ". . . cm1 . . cm2 . . .",
+        ". . . . . . . . . .",
+        ". . lw . st1 st1 . rw . .",
+      ];
+      break;
+    case "3-1-3-1 (9)":
+      gridTemplateAreas = [
+        ". . . . . . . . . .",
+        "gk gk gk gk gk gk gk gk gk gk",
+        ". . lb . cb cb . rb . .",
+        ". . . . cdm cdm . . . .",
+        ". . . . . . . . . .",
+        ". . lw . cm cm . rw . .",
+        ". . . . . . . . . .",
+        ". . . . st1 st1 . . . .",
+        ". . . . . . . . . .",
+      ];
+      break;
+    default:
+      gridTemplateAreas = [
+        ". . . . . . . . . .",
+        "gk gk gk gk gk gk gk gk gk gk",
+        ". . lcb lcb . . rcb rcb . .",
+        "lb lb lcb lcb . . rcb rcb rb rb",
+        "lcm lcm . . cm cm . . rcm rcm",
+        "lcm lcm . . cm cm . . rcm rcm",
+        ". . . . . . . . . .",
+        ". lw lw . st st . rw rw .",
+        ". lw lw . st st . rw rw .",
+        ". . . . . . . . . .",
+      ];
+  }
+
+  return ({
+    borderRadius: "12px",
+    border: `1px solid ${theme.palette.mode === 'dark' ? '#444' : '#ccc'}`,
+    background:
+      theme.palette.mode === 'dark'
+        ? "linear-gradient(to bottom, rgba(10, 27, 17, 0.6), rgba(50, 50, 50, 0.6))"
+        : "linear-gradient(to bottom, rgba(180, 200, 180, 0.6), rgba(220, 230, 220, 0.6))",
+    position: "relative",
+    touchAction: "none",
+    userSelect: "none",
+    aspectRatio: "3 / 3",
+    height: "calc(100%)",
+    display: "grid",
+    gridTemplateRows: "repeat(10, 1fr)",
+    gridTemplateColumns: "repeat(10, 1fr)",
+    gridGap: "4px",
+    gridTemplateAreas: gridTemplateAreas.map(row => `"${row}"`).join('\n'),
+  })
+});
+
+const PitchInner = styled(Box)(({ theme }) => ({
+  position: "absolute",
+  inset: 12,
+  border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)'}`,
+  borderRadius: "8px",
+}));
+
+const PitchCenterLine = styled(Box)(({ theme }) => ({
+  position: "absolute",
+  left: 0,
+  top: "50%",
+  height: "1px",
+  width: "calc(100%)",
+  bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)',
+}));
+
+const PitchGoalBox = styled(Box)(({ theme }) => ({
+  position: "absolute",
+  left: "calc(50% - 80px)",
+  height: "50px",
+  width: "160px",
+  border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)'}`,
+}));
+
+const PitchSmallBox = styled(Box)(({ theme }) => ({
+  position: "absolute",
+  left: "calc(50% - 30px)",
+  height: "20px",
+  width: "60px",
+  border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)'}`,
+}));
 
 export default function Pitch({
   selectedSlotId,
@@ -15,105 +181,43 @@ export default function Pitch({
   const roster = useAppStore((s) => s.roster);
   const getLiveMinutesSec = useAppStore((s) => s.getLiveMinutesSec);
   const theme = useTheme();
+  const formation = useAppStore((s) => s.formation);
 
   return (
-    <Box
+    <PitchContainer
+      formation={formation}
       sx={{
-        borderRadius: "12px",
-        border: `1px solid ${theme.palette.mode === 'dark' ? '#444' : '#ccc'}`, // Dynamic border color
-        background:
-          theme.palette.mode === 'dark'
-            ? "linear-gradient(to bottom, rgba(10, 27, 17, 0.6), rgba(50, 50, 50, 0.6))"
-            : "linear-gradient(to bottom, rgba(180, 200, 180, 0.6), rgba(220, 230, 220, 0.6))", // Light mode gradient
-        position: "relative",
-        touchAction: "none",
-        userSelect: "none",
-        aspectRatio: "3 / 3",
-        height: "calc(100%)",
       }}
     >
-      <Box
-        sx={{
-          position: "absolute",
-          inset: 12,
-          border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)'}`, // Dynamic border color
-          borderRadius: "8px",
-        }}
-      >
-        {/* Center Line */}
-        <Box
-          sx={{
-            position: "absolute",
-            left: 0,
-            top: "50%",
-            height: "1px",
-            width: "calc(100%)",
-            bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)', // Dynamic bgcolor
-          }}
-        />
-
-        {/* Goal Boxes - adjust dimensions as needed */}
-        <Box
-          sx={{
-            position: "absolute",
-            top: 0,
-            left: "calc(50% - 80px)", // Adjust for centering
-            height: "50px", // Adjust height
-            width: "160px", // Adjust width
-            border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)'}`, // Dynamic border color
-          }}
-        />
-        <Box
-          sx={{
-            position: "absolute",
-            top: 0,
-            left: "calc(50% - 30px)", // Adjust for centering
-            height: "20px", // Adjust height
-            width: "60px", // Adjust width
-            border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)'}`, // Dynamic border color
-          }}
-        />
-        <Box
-          sx={{
-            position: "absolute",
-            bottom: 0,
-            left: "calc(50% - 80px)", // Adjust for centering
-            height: "50px", // Adjust height
-            width: "160px", // Adjust width
-            border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)'}`, // Dynamic border color
-          }}
-        />
-        <Box
-          sx={{
-            position: "absolute",
-            bottom: 0,
-            left: "calc(50% - 30px)", // Adjust for centering
-            height: "20px", // Adjust height
-            width: "60px", // Adjust width
-            border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)'}`, // Dynamic border color
-          }}
-        />
-      </Box>
+      <PitchInner>
+        <PitchCenterLine />
+        <PitchGoalBox sx={{ top: 0 }} />
+        <PitchSmallBox sx={{ top: 0 }} />
+        <PitchGoalBox sx={{ bottom: 0 }} />
+        <PitchSmallBox sx={{ bottom: 0 }} />
+      </PitchInner>
       {tactics &&
         tactics.map((slot) => {
           const player = roster.find((p) => p.id === slot.playerId);
           const aria = player
             ? `${slot.id.toUpperCase()} — ${formatClock(
-                getLiveMinutesSec(player.id)
-              )} played`
+              getLiveMinutesSec(player.id)
+            )} played`
             : `${slot.id.toUpperCase()} — empty`;
           const isSelected = selectedSlotId === slot.id;
           return (
-            <Box
+            <Box // Use a regular Box component
               key={slot.id}
               sx={{
-                position: "absolute",
-                left: `${slot.y * 100}%`,
-                top: `${(1 - slot.x) * 100}%`,
-                zIndex: 1, // Ensure player info is above position
+                gridArea: slot.gridArea, // Apply grid area here
+                zIndex: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                overflow: 'visible', // Add overflow: visible
+                position: 'relative', // Add position: relative
               }}
             >
-              {/* Position button - always shown */}
               <Box
                 role="button"
                 tabIndex={0}
@@ -122,10 +226,7 @@ export default function Pitch({
                 data-id={slot.id}
                 data-label={slot.id.toUpperCase()}
                 sx={{
-                  position: "absolute",
-                  left: "50%",
-                  top: "50%",
-                  transform: "translateX(-50%) translateY(-50%)",
+                  position: "relative",
                   cursor: "pointer",
                   touchAction: "none",
                   outline: "none",
@@ -146,12 +247,9 @@ export default function Pitch({
                   if (isSelected) {
                     setSelectedSlotId(undefined);
                   } else if (selectedSlotId) {
-                    // Find the selected slot
                     const selectedSlot = tactics.find((s) => s.id === selectedSlotId);
 
-                    // If both slots have players, swap them
                     if (selectedSlot?.playerId && slot.playerId) {
-                      // Swap player IDs in the tactics array (you'll need to update your store accordingly)
                       useAppStore.setState((state) => ({
                         tactics: state.tactics.map((t) =>
                           t.id === slot.id
@@ -161,7 +259,7 @@ export default function Pitch({
                               : t
                         ),
                       }));
-                      setSelectedSlotId(undefined); // Clear selection after swap
+                      setSelectedSlotId(undefined);
                     } else if (selectedSlot?.playerId && !slot.playerId) {
                       useAppStore.setState((state) => ({
                         tactics: state.tactics.map((t) => t.id === slot.id
@@ -170,9 +268,9 @@ export default function Pitch({
                             ? { ...t, playerId: undefined }
                             : t),
                       }));
-                      setSelectedSlotId(undefined); // Clear selection after swap
+                      setSelectedSlotId(undefined);
                     } else {
-                      setSelectedSlotId(slot.id); // Just select the new slot if no swap
+                      setSelectedSlotId(slot.id);
                     }
                   } else {
                     setSelectedSlotId(slot.id);
@@ -185,8 +283,8 @@ export default function Pitch({
               >
                 <Box
                   sx={{
-                    width: 48,
-                    height: 48,
+                    width: 50,
+                    height: 50,
                     borderRadius: "50%",
                     border: "1px solid",
                     display: "flex",
@@ -194,8 +292,8 @@ export default function Pitch({
                     justifyContent: "center",
                     fontSize: "0.75rem",
                     backgroundColor: player
-                      ? "rgba(76, 175, 80, 0.8)" // Solid green if player assigned
-                      : "rgba(50, 50, 50, 0.8)", // Solid gray if empty
+                      ? "rgba(76, 175, 80, 0.8)"
+                      : "rgba(50, 50, 50, 0.8)",
                     borderColor: player
                       ? "rgba(76, 175, 80, 0.6)"
                       : "rgba(80, 80, 80, 0.7)",
@@ -204,31 +302,31 @@ export default function Pitch({
                 >
                   {slot.id.toUpperCase()}
                 </Box>
-              </Box>
-
-              {/* Player information - displayed when a player is assigned */}
+              
               {player && (
                 <Typography
                   variant="caption"
                   sx={{
                     position: "absolute",
                     left: "50%",
-                    top: "-100%",
-                    transform: "translateX(-50%) translateY(150%)",
+                    transform: "translateX(-50%)",
+                    bottom: "0px",
                     mb: 1,
-                    whitespace: "nowrap",
-                    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.7)' : 'rgba(255, 255, 255, 0.7)', // Opaque background
-                    padding: "2px 4px", // Add padding for readability
-                    borderRadius: "4px", // Round the corners
-                    color: theme.palette.mode === 'dark' ? theme.palette.text.primary : theme.palette.text.primary, // Text color
+                    whiteSpace: "nowrap",
+                    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.7)' : 'rgba(255, 255, 255, 0.7)',
+                    padding: "2px 4px",
+                    borderRadius: "4px",
+                    color: theme.palette.mode === 'dark' ? theme.palette.text.primary : theme.palette.text.primary,
+                    zIndex: 2, // Add z-index: 2
                   }}
                 >
                   {player.number ? `#${player.number}` : ""}&nbsp;{player.name}
                 </Typography>
               )}
+              </Box>
             </Box>
           );
         })}
-    </Box>
+    </PitchContainer>
   );
 }
