@@ -101,7 +101,7 @@ export default function MatchTab() {
                         return (
                             <Box key={index} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: 1, p: 2, marginBottom: 5, bgcolor: 'background.paper', mb: 1 }}>
                                 <Typography variant="body2">
-                                    {benchPlayer?.name} for {onFieldPlayer?.name}
+                                    {benchPlayer?.number} {benchPlayer?.name} for  {onFieldPlayer?.number}{onFieldPlayer?.name}
                                 </Typography>
                                 <Button size="small" onClick={() => cancelSub(sub)}>Cancel</Button>
                             </Box>

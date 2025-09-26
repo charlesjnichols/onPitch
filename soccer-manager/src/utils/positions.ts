@@ -29,5 +29,5 @@ export function getEligibleTagsForSlot(slotId: string): PositionTag[] {
 export function playerEligibleForSlot(player: Player, slotId: string): boolean {
 	const tags = getEligibleTagsForSlot(slotId)
 	if (tags.length === 0) return true // if unknown slot id, allow all
-	return player.positionTags.some(t => tags.includes(t))
+	return player.positionTags.some(t => tags.includes(t as PositionTag))
 }

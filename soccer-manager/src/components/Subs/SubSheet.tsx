@@ -4,7 +4,7 @@ import { useAppStore } from "../../store";
 import { SLOT_ELIGIBLE_TAGS } from "../../utils/positions";
 import { Box, Typography } from "@mui/material";
 import BenchItem from "../Bench/BenchItem";
-import type { Player } from "../../types";
+import type { Player, PositionTag } from "../../types";
 
 interface SubSheetProps {
   open: boolean;
@@ -42,7 +42,10 @@ const SubList = ({
               id={p.id}
               name={p.name}
               number={p.number}
-              positionTags={[position]}
+              positionTags={[position as PositionTag]}
+              shots={p.shots}
+              passes={p.passes}
+              saves={p.saves}
             />
           </Box>
         );
@@ -58,7 +61,7 @@ export default function SubSheet({
 }: SubSheetProps) {
   const roster = useAppStore((s) => s.roster);
   const tactics = useAppStore((s) => s.tactics);
-      
+
   const { eligible, ineligible } = useMemo(() => {
     if (!benchPlayerId)
       return { eligible: [], ineligible: [] } as {
@@ -86,7 +89,7 @@ export default function SubSheet({
 
     const eligibleSlotIds = new Set<string>();
     for (const [slotId, tags] of Object.entries(SLOT_ELIGIBLE_TAGS)) {
-      if (bench.positionTags.some((tag) => tags.includes(tag))) {
+      if (bench.positionTags.some((tag) => tags.includes(tag as PositionTag))) {
         eligibleSlotIds.add(slotId);
       }
     }

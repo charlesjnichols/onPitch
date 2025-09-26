@@ -51,12 +51,14 @@ function App() {
     );
     const [tab, setTab] = React.useState<number>(0);
 
-    const handleChange = (event: React.SyntheticEvent | SelectChangeEvent<number>, newValue?: number) => {
-        if (typeof newValue === 'number') { // Value from Tabs component
+    // Handler for the Tabs component
+    const handleTabsChange = (_event: React.SyntheticEvent, newValue: number) => {
         setTab(newValue);
-        } else { // Value from Select component
-            setTab((event as SelectChangeEvent<number>).target.value as number);
-        }
+    };
+
+    // Handler for the Select component
+    const handleSelectChange = (event: SelectChangeEvent<number>) => {
+        setTab(event.target.value as number);
     };
 
     const colorMode = React.useMemo(
@@ -92,7 +94,7 @@ function App() {
                                     labelId="tab-select-label"
                                     id="tab-select"
                                     value={tab}
-                                    onChange={handleChange}
+                                    onChange={handleSelectChange} // Use the new select-specific handler
                                     label="Navigation"
                                 >
                                     {tabLabels.map((label, index) => (
@@ -103,7 +105,7 @@ function App() {
                                 </Select>
                             </FormControl>
                         ) : (
-                            <Tabs value={tab} onChange={handleChange} aria-label="basic tabs example" centered sx={{ width: '100%' }}>
+                            <Tabs value={tab} onChange={handleTabsChange} aria-label="basic tabs example" centered sx={{ width: '100%' }}> {/* Use the new tabs-specific handler */}
                                 <Tab label="Roster" />
                                 <Tab label="Lineup" />
                                 <Tab label="Match" />
