@@ -1,17 +1,30 @@
 import type { FormationId } from "./store";
 
 export type PositionTag =
-  | 'GK' | 'LB' | 'RB' | 'CB' | 'LWB' | 'RWB'
-  | 'CDM' | 'CM' | 'CAM'
-  | 'LW' | 'RW' | 'CF' | 'ST';
+  | "GK"
+  | "LB"
+  | "RB"
+  | "CB"
+  | "LWB"
+  | "RWB"
+  | "CDM"
+  | "CM"
+  | "CAM"
+  | "LW"
+  | "RW"
+  | "CF"
+  | "ST";
 
 export interface Player {
   id: string;
   name: string;
   number?: number;
-  positionTags: PositionTag[];
+  positionTags: string[]; // e.g., ["GK", "DEF", "MID", "FWD"
   isOnField: boolean;
   minutesPlayedSec: number;
+  shots: number;
+  passes: number;
+  saves: number;
 }
 
 export interface SubEvent {
@@ -25,6 +38,7 @@ export interface SubEvent {
 export interface MatchConfig {
   maxOnField: number; // default 11
   rotationIntervalMinutes: number; // banner reminder
+  matchTimeMinutes: number;
 }
 
 export interface MatchClockState {
@@ -37,8 +51,7 @@ export interface MatchClockState {
 
 export interface TacticsSlot {
   id: string;
-  x: number; // 0..1 from left
-  y: number; // 0..1 from top
+  gridArea: string;
   playerId?: string;
 }
 
@@ -49,4 +62,6 @@ export interface MatchState {
   formation: FormationId;
   clock: MatchClockState;
   config: MatchConfig;
+  myTeamScore: number,
+  opponentTeamScore: number,
 }

@@ -7,7 +7,7 @@ import { useAppStore } from "../store";
 
 export default function LineupTab() {
   const [selectedSlotId, setSelectedSlotId] = useState<string | undefined>(
-    undefined
+    undefined,
   );
   const placePlayerInSlot = useAppStore((s) => s.placePlayerInSlot);
 
@@ -28,7 +28,7 @@ export default function LineupTab() {
     if (isIOS && isSafari) {
       // HTML5 DnD is unreliable on iOS Safari; pointer-based drag is enabled
       console.warn(
-        "[SubTracker] iOS Safari detected — using Pointer Events drag (no HTML5 DnD)."
+        "[SubTracker] iOS Safari detected — using Pointer Events drag (no HTML5 DnD).",
       );
     }
   }, []);

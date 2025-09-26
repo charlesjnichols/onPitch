@@ -1,13 +1,22 @@
 /* Base dark theme body */
-html, body, #root { 
-  height: 100%; 
+html,
+body,
+#root {
+  height: 100%;
 }
 
-body { 
+body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   padding-bottom: env(safe-area-inset-bottom);
   overflow-y: scroll; /* Force vertical scrollbar to always be visible */
+}
+
+/* Define CSS variables for scrollbar styling (add this section) */
+:root {
+  --color-surface-300: #333; /* Dark grey for scrollbar track */
+  --color-surface-400: #555; /* Slightly lighter dark grey for scrollbar thumb */
+  --color-primary: #90caf9; /* Material-UI default primary color for dark mode */
 }
 
 /* Enhanced dark theme classes */
@@ -16,13 +25,13 @@ body {
 }
 
 /* Touch optimizations */
-button { 
-  touch-action: manipulation; 
+button {
+  touch-action: manipulation;
   transition: all 0.2s ease-in-out;
 }
 
 /* Utility helpers */
-.container { 
+.container {
   max-width: 1280px;
   margin: 0 auto;
   padding: 0 2rem;
@@ -77,13 +86,26 @@ button {
 
 /* Soccer field pattern background */
 .field-pattern {
-  background-image: 
-    radial-gradient(circle at 25% 25%, rgba(16, 185, 129, 0.1) 2px, transparent 2px),
-    radial-gradient(circle at 75% 75%, rgba(16, 185, 129, 0.1) 2px, transparent 2px);
+  background-image:
+    radial-gradient(
+      circle at 25% 25%,
+      rgba(16, 185, 129, 0.1) 2px,
+      transparent 2px
+    ),
+    radial-gradient(
+      circle at 75% 75%,
+      rgba(16, 185, 129, 0.1) 2px,
+      transparent 2px
+    );
   background-size: 30px 30px;
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: .5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
