@@ -34,7 +34,7 @@ const PlayerRow: React.FC<PlayerRowProps> = ({ player }) => {
         onChange={handleNumberChange}
         inputProps={{ maxLength: 2 }} // Limit input to 2 characters (numbers)
       />
-      <Typography variant="subtitle1" fontWeight="bold" sx={{ flexGrow: 1, textAlign: 'left' }}>{player.name}</Typography>
+      <Typography sx={{ flexGrow: 1, textAlign: 'left' }}>{player.name}</Typography>
       <Select
         multiple
         value={player.positionTags}
