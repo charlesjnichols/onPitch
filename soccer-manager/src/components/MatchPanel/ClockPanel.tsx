@@ -10,16 +10,28 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  ButtonGroup, // Added
 } from "@mui/material";
+
 export default function ClockPanel() {
   const { isRunning, startedAtSec, accumulatedSec } = useAppStore(
     (s) => s.gameClock,
   );
-  const { startedAtSec: subStartedAtSec, accumulatedSec: subAccumulatedSec } =
-    useAppStore((s) => s.subClock);
   const startClock = useAppStore((s) => s.startClock);
   const pauseClock = useAppStore((s) => s.pauseClock);
   const resetClock = useAppStore((s) => s.resetClock);
+  // Added score states and actions
+  const myTeamScore = useAppStore((s) => s.myTeamScore);
+  const opponentTeamScore = useAppStore((s) => s.opponentTeamScore);
+  const incrementMyScore = useAppStore((s) => s.incrementMyScore);
+  const decrementMyScore = useAppStore((s) => s.decrementMyScore);
+  const incrementOpponentScore = useAppStore(
+    (s) => s.incrementOpponentScore,
+  );
+  const decrementOpponentScore = useAppStore(
+    (s) => s.decrementOpponentScore,
+  );
+
   const [tick, setTick] = useState(0);
   // New state for reset confirmation dialog
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
@@ -34,12 +46,7 @@ export default function ClockPanel() {
     () => getTotalElapsedSec(isRunning, startedAtSec, accumulatedSec),
     [isRunning, startedAtSec, accumulatedSec, tick],
   );
-  const subElapsedSec = useMemo(
-    () => getTotalElapsedSec(isRunning, subStartedAtSec, subAccumulatedSec),
-    [isRunning, subStartedAtSec, subAccumulatedSec, tick],
-  );
   const formattedTime = formatClock(Math.floor(elapsedSec));
-  const subFormattedTime = formatClock(Math.floor(subElapsedSec));
 
   // Handlers for the reset confirmation dialog
   const handleOpenResetConfirm = () => {
@@ -61,12 +68,30 @@ export default function ClockPanel() {
         display: "flex",
         flexDirection: "column",
         gap: 2,
-        p: 2,
         alignItems: "center",
       }}
     >
+      {/* Score Display and Controls */}
+      <Box sx={{ display: "flex", alignItems: "center", gap: 2, mt: 1 }}>
+        <ButtonGroup size="small" variant="outlined" aria-label="my team score controls">
+          <Button onClick={decrementMyScore}>-</Button>
+          <Button disableRipple>
+            <Typography color="text.primary" variant="body2">My Team: {myTeamScore}</Typography>
+          </Button>
+          <Button onClick={incrementMyScore}>+</Button>
+        </ButtonGroup>
+
+        <ButtonGroup size="small" variant="outlined" aria-label="opponent team score controls">
+          <Button onClick={decrementOpponentScore}>-</Button>
+          <Button disableRipple>
+            <Typography color="text.primary" variant="body2">Opponents: {opponentTeamScore}</Typography>
+          </Button>
+          <Button onClick={incrementOpponentScore}>+</Button>
+        </ButtonGroup>
+      </Box>
+
       <Typography variant="h4">{formattedTime}</Typography>
-      <Typography variant="body2">Sub Clock: {subFormattedTime}</Typography>
+
       <Box sx={{ display: "flex", gap: 1 }}>
         {!isRunning ? (
           <Button variant="contained" color="success" onClick={startClock}>
@@ -113,3 +138,4 @@ export default function ClockPanel() {
     </Box>
   );
 }
+

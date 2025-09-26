@@ -62,4 +62,6 @@ export interface MatchState {
   formation: FormationId;
   clock: MatchClockState;
   config: MatchConfig;
+  myTeamScore: number,
+  opponentTeamScore: number,
 }

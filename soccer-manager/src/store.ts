@@ -160,6 +160,10 @@ export interface AppStore extends MatchState {
   decrementPass: (playerId: string) => void;
   recordSave: (playerId: string) => void;
   decrementSave: (playerId: string) => void;
+  incrementMyScore: () => void; 
+  decrementMyScore: () => void; 
+  incrementOpponentScore: () => void; 
+  decrementOpponentScore: () => void; 
 }
 
 const initialState: MatchState = {
@@ -169,6 +173,8 @@ const initialState: MatchState = {
   formation: "4-3-3",
   clock: { isRunning: false, accumulatedSec: 0 },
   config: { maxOnField: 11, rotationIntervalMinutes: 10, matchTimeMinutes: 90 },
+  myTeamScore: 0,
+  opponentTeamScore: 0,
 };
 
 export const useAppStore = create<AppStore>()(
@@ -273,6 +279,17 @@ export const useAppStore = create<AppStore>()(
               ? { ...pl, saves: Math.max(0, pl.saves - 1) }
               : pl,
           ),
+        })),
+
+      incrementMyScore: () =>
+        set((s) => ({ myTeamScore: s.myTeamScore + 1 })),
+      decrementMyScore: () =>
+        set((s) => ({ myTeamScore: Math.max(0, s.myTeamScore - 1) })),
+      incrementOpponentScore: () =>
+        set((s) => ({ opponentTeamScore: s.opponentTeamScore + 1 })),
+      decrementOpponentScore: () =>
+        set((s) => ({
+          opponentTeamScore: Math.max(0, s.opponentTeamScore - 1),
         })),
 
       startClock: () =>
@@ -723,6 +740,8 @@ export const useAppStore = create<AppStore>()(
         formation: s.formation,
         clock: s.clock,
         config: s.config,
+        myTeamScore: s.myTeamScore,
+        opponentTeamScore: s.opponentTeamScore,
       }),
       version: 1,
       onRehydrateStorage: () => {
