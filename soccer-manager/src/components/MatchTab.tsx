@@ -2,21 +2,30 @@ import { useEffect, useState, useMemo } from "react";
 import ClockPanel from "./MatchPanel/ClockPanel";
 import { useAppStore } from "../store";
 import SubSheet from "./Subs/SubSheet";
-import { Button, Box, Typography, Stack, ButtonGroup, Divider } from "@mui/material"; // Removed Paper, added it back to keep import consistent
+import {
+  Button,
+  Box,
+  IconButton,
+  Typography,
+  Stack,
+  ButtonGroup,
+  Divider,
+} from "@mui/material";
 import Bench from "./Bench/Bench";
-import { formationLayouts } from "../store";
 import { formatClock, getTotalElapsedSec } from "../utils/time";
 import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
 import PersonRemoveAlt1Icon from "@mui/icons-material/PersonRemoveAlt1";
 import ArrowRightAltIcon from "@mui/icons-material/ArrowRightAlt";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
-import WarningIcon from '@mui/icons-material/Warning';
+import WarningIcon from "@mui/icons-material/Warning";
+import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 
 export default function MatchTab() {
   const roster = useAppStore((s) => s.roster);
   const getFormattedLiveMinutes = useAppStore((s) => s.getFormattedLiveMinutes);
-  const isRunning = useAppStore((s) => s.clock.isRunning);
+  const isRunning = useAppStore((s) => s.isRunning);
   const { startedAtSec: subStartedAtSec, accumulatedSec: subAccumulatedSec } =
     useAppStore((s) => s.subClock);
   const tactics = useAppStore((s) => s.tactics);
@@ -38,8 +47,6 @@ export default function MatchTab() {
   const [selectedSlotId, setSelectedSlotId] = useState<string | undefined>(
     undefined,
   );
-
-
 
   const resetSubClock = useAppStore((s) => s.resetSubClock);
   const rotationIntervalMinutes = useAppStore(
@@ -66,11 +73,11 @@ export default function MatchTab() {
     [isRunning, startedAtSec, accumulatedSec, tick],
   );
 
-    const subElapsedSec = useMemo(
-      () => getTotalElapsedSec(isRunning, subStartedAtSec, subAccumulatedSec),
-      [isRunning, subStartedAtSec, subAccumulatedSec, tick],
-    );
-    const subFormattedTime = formatClock(Math.floor(subElapsedSec));
+  const subElapsedSec = useMemo(
+    () => getTotalElapsedSec(isRunning, subStartedAtSec, subAccumulatedSec),
+    [isRunning, subStartedAtSec, subAccumulatedSec, tick],
+  );
+  const subFormattedTime = formatClock(Math.floor(subElapsedSec));
   const intervalSec = rotationIntervalMinutes * 60;
   const showRotation = isRunning && elapsedSec > intervalSec;
 
@@ -100,7 +107,7 @@ export default function MatchTab() {
       // } else if (indexB !== -1) {
       //   return 1;
       // } else {
-        return a.name.localeCompare(b.name);
+      return a.name.localeCompare(b.name);
       // }
     });
 
@@ -119,7 +126,12 @@ export default function MatchTab() {
         mx: "auto",
       }}
     >
-      <Typography variant="h5" sx={{ mt: 2, textAlign: 'center', fontWeight: 'bold' }}>Match Stats</Typography>
+      <Typography
+        variant="h5"
+        sx={{ mt: 2, textAlign: "center", fontWeight: "bold" }}
+      >
+        Scoreboard
+      </Typography>
       <Box // ClockPanel itself already has some styling, so just container here
         sx={{
           display: "flex",
@@ -131,29 +143,45 @@ export default function MatchTab() {
       >
         <ClockPanel />
       </Box>
-
-      <Divider sx={{ width: '100%', maxWidth: 600 }} /> {/* Added Divider */}
-
+      <Divider sx={{ width: "100%", maxWidth: 600 }} /> {/* Added Divider */}
       {/* Subs Section */}
-      <Box sx={{ width: '100%', maxWidth: 600, mb: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <Typography variant="h5" sx={{ mb: 2, textAlign: 'center', fontWeight: 'bold' }}>Substitutions</Typography>
+      <Box
+        sx={{
+          width: "100%",
+          maxWidth: 600,
+          mb: 4,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
+        <Typography
+          variant="h5"
+          sx={{ mb: 2, textAlign: "center", fontWeight: "bold" }}
+        >
+          Substitutions
+        </Typography>
         {showRotation && (
           // Enhanced "Rotate Players Now!" message
           <Box
             sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
               gap: 1,
-              color: 'warning.dark',
+              color: "warning.dark",
               p: 1,
               borderRadius: 1,
-              width: '100%',
-              maxWidth: 400, 
+              width: "100%",
+              maxWidth: 400,
             }}
           >
             <WarningIcon color="warning" />
-            <Typography variant="h6" component="span" sx={{ fontWeight: 'bold' }}>
+            <Typography
+              variant="h6"
+              component="span"
+              sx={{ fontWeight: "bold" }}
+            >
               Rotate Players Now!
             </Typography>
           </Box>
@@ -161,6 +189,11 @@ export default function MatchTab() {
 
         <Box sx={{ display: "flex", alignItems: "center", p: 1 }}>
           <Typography variant="body2">Sub Clock: {subFormattedTime}</Typography>
+          {isRunning && (
+            <IconButton color="secondary" size="small" onClick={resetSubClock}>
+              <RestartAltIcon />
+            </IconButton>
+          )}
         </Box>
 
         {substitutionQueue.length > 0 &&
@@ -180,7 +213,7 @@ export default function MatchTab() {
                   bgcolor: "background.paper", // Keep individual sub item background
                   mb: 1, // Margin for each sub item
                   borderRadius: 1,
-                  border: theme => `1px solid ${theme.palette.divider}`,
+                  border: (theme) => `1px solid ${theme.palette.divider}`,
                 }}
               >
                 <Box
@@ -231,50 +264,44 @@ export default function MatchTab() {
               </Box>
             );
           })}
-        {substitutionQueue.length === 0 && (
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              width: "100%",
-              gap: 1,
-              p: 2,
-              bgcolor: "background.paper",
-              mb: 1,
-            }}
-          >
-            <Typography variant="body2">No Substitutions Queued</Typography>
-          </Box>
-        )}
-        <Box sx={{ display: "flex", gap: 2, mt: 2, justifyContent: 'center' }}>
+        <Box sx={{ display: "flex", gap: 2, mt: 2, justifyContent: "center" }}>
           {substitutionQueue.length > 0 && (
-            <Button variant="contained" color="primary" onClick={performSubs}>
-              Perform Substitutions
-            </Button>
-          )}
-          {isRunning && (
             <Button
-              variant="contained"
-              color="secondary"
-              onClick={resetSubClock}
+              variant="outlined" // Changed variant to outlined for less prominence
+              color="primary"
+              size="medium" // IconButton size="small" makes it small. Button's default size is 'medium', or you can use "small" if preferred.
+              onClick={performSubs}
+              startIcon={<SwapHorizIcon />} // Using startIcon for proper spacing
             >
-              Reset Sub Clock
+              Substitute Players
             </Button>
           )}
         </Box>
-      </Box> {/* End of Subs Section */}
-
-      <Divider sx={{ width: '100%', maxWidth: 600 }} /> {/* Added Divider */}
-
+      </Box>{" "}
+      {/* End of Subs Section */}
+      <Divider sx={{ width: "100%", maxWidth: 600 }} /> {/* Added Divider */}
       {/* On Field Section */}
-      <Box sx={{ width: '100%', maxWidth: 600, mb: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <Typography variant="h5" sx={{ mb: 2, textAlign: 'center', fontWeight: 'bold' }}>On Field</Typography>
+      <Box
+        sx={{
+          width: "100%",
+          maxWidth: 600,
+          mb: 4,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
+        <Typography
+          variant="h5"
+          sx={{ mb: 2, textAlign: "center", fontWeight: "bold" }}
+        >
+          On Field
+        </Typography>
         <Box width={"100%"}>
           {onFieldPlayers.map((p) => {
             const slot = tactics.find((t) => t.playerId === p.id);
             const position = slot ? slot.id.toUpperCase() : "N/A";
-            const isGoalie = position ==="GK";
+            const isGoalie = position === "GK";
 
             return (
               <Box
@@ -289,7 +316,7 @@ export default function MatchTab() {
                   bgcolor: "background.paper",
                   mb: 1,
                   borderRadius: 1,
-                  border: theme => `1px solid ${theme.palette.divider}`,
+                  border: (theme) => `1px solid ${theme.palette.divider}`,
                 }}
               >
                 <Box
@@ -330,7 +357,9 @@ export default function MatchTab() {
                         <RemoveIcon fontSize="small" />
                       </Button>
                       <Button disableRipple>
-                        <Typography color="text.primary" variant="body2">Saves ({p.saves})</Typography>
+                        <Typography color="text.primary" variant="body2">
+                          Saves ({p.saves})
+                        </Typography>
                       </Button>
                       <Button onClick={() => recordSave(p.id)}>
                         <AddIcon fontSize="small" />
@@ -348,7 +377,9 @@ export default function MatchTab() {
                           <RemoveIcon fontSize="small" />
                         </Button>
                         <Button disableRipple>
-                          <Typography color="text.primary" variant="body2">Pass ({p.passes})</Typography>
+                          <Typography color="text.primary" variant="body2">
+                            Pass ({p.passes})
+                          </Typography>
                         </Button>
                         <Button onClick={() => recordPass(p.id)}>
                           <AddIcon fontSize="small" />
@@ -363,7 +394,9 @@ export default function MatchTab() {
                           <RemoveIcon fontSize="small" />
                         </Button>
                         <Button disableRipple>
-                          <Typography color="text.primary" variant="body2">Shot ({p.shots})</Typography>
+                          <Typography color="text.primary" variant="body2">
+                            Shot ({p.shots})
+                          </Typography>
                         </Button>
                         <Button onClick={() => recordShot(p.id)}>
                           <AddIcon fontSize="small" />
@@ -377,9 +410,7 @@ export default function MatchTab() {
           })}
         </Box>
       </Box>
-
-      <Divider sx={{ width: '100%', maxWidth: 600 }} /> {/* Added Divider */}          
-
+      <Divider sx={{ width: "100%", maxWidth: 600 }} /> {/* Added Divider */}
       <Bench
         selectedSlotId={selectedSlotId}
         setSelectedSlotId={setSelectedSlotId}

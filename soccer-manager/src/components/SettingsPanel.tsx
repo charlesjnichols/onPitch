@@ -1,6 +1,6 @@
 import { Box, TextField, Button, Typography } from "@mui/material";
 import { useAppStore } from "../store";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface SettingsPanelProps {
   onClose: () => void;
@@ -8,14 +8,26 @@ interface SettingsPanelProps {
 
 export default function SettingsPanel({ onClose }: SettingsPanelProps) {
   const config = useAppStore((s) => s.config);
+  const gameClockAccumulatedSec = useAppStore(
+    (s) => s.gameClock.accumulatedSec,
+  );
   const setConfig = useAppStore((s) => s.setConfig);
+  const setGameClockTime = useAppStore((s) => s.setGameClockTime);
+
   const [matchTimeMinutes, setMatchTimeMinutes] = useState<number>(
     config.matchTimeMinutes,
   );
   const [rotationIntervalMinutes, setRotationIntervalMinutes] =
     useState<number>(config.rotationIntervalMinutes);
   const [maxOnField, setMaxOnField] = useState<number>(config.maxOnField);
-  const [gameClockMinutes, setGameClockMinutes] = useState<number>(0);
+  const [gameClockMinutes, setGameClockMinutes] = useState<number>(
+    Math.floor(gameClockAccumulatedSec / 60),
+  );
+
+  // Effect to update gameClockMinutes if the store's gameClockAccumulatedSec changes
+  useEffect(() => {
+    setGameClockMinutes(Math.floor(gameClockAccumulatedSec / 60));
+  }, [gameClockAccumulatedSec]);
 
   const handleSaveConfig = () => {
     setConfig({
@@ -23,10 +35,11 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
       rotationIntervalMinutes,
       maxOnField,
     });
-    useAppStore.setState({
-      clock: { isRunning: false, accumulatedSec: gameClockMinutes * 60 },
-    });
-    onClose(); // Close the modal after saving
+    // Only update game clock if the input value is different from the current stored value
+    if (Math.floor(gameClockAccumulatedSec / 60) !== gameClockMinutes) {
+      setGameClockTime(gameClockMinutes * 60);
+    }
+    onClose();
   };
 
   return (

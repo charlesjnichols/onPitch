@@ -116,7 +116,6 @@ interface SubstitutionRequest {
 }
 
 interface ClockState {
-  isRunning: boolean;
   startedAtSec?: number;
   accumulatedSec: number;
 }
@@ -132,7 +131,7 @@ export interface AppStore extends MatchState {
   startClock: () => void;
   pauseClock: () => void;
   resetClock: () => void;
-  setClock: (newTimeInSeconds: number) => void;
+  setGameClockTime: (newTimeInSeconds: number) => void;
   makeSub: (inId: string, outId?: string) => void;
   assignPlayerToSlot: (slotId: string, playerId?: string) => void;
   moveSlot: (slotId: string, x: number, y: number) => void;
@@ -145,6 +144,7 @@ export interface AppStore extends MatchState {
   subBenchForSlot: (benchPlayerId: string, slotId: string) => void;
   getLiveMinutesSec: (playerId: string) => number;
   resetMatchState: () => void;
+  resetPlayerStats: () => void;
   resetRoster: () => void;
   substitutionQueue: SubstitutionRequest[];
   enqueueSub: (sub: SubstitutionRequest) => void;
@@ -152,6 +152,7 @@ export interface AppStore extends MatchState {
   performSubs: () => void;
   subClock: ClockState;
   gameClock: ClockState;
+  isRunning: boolean;
   resetSubClock: () => void;
   setConfig: (patch: Partial<MatchState["config"]>) => void;
   recordShot: (playerId: string) => void;
@@ -160,10 +161,10 @@ export interface AppStore extends MatchState {
   decrementPass: (playerId: string) => void;
   recordSave: (playerId: string) => void;
   decrementSave: (playerId: string) => void;
-  incrementMyScore: () => void; 
-  decrementMyScore: () => void; 
-  incrementOpponentScore: () => void; 
-  decrementOpponentScore: () => void; 
+  incrementMyScore: () => void;
+  decrementMyScore: () => void;
+  incrementOpponentScore: () => void;
+  decrementOpponentScore: () => void;
 }
 
 const initialState: MatchState = {
@@ -171,7 +172,10 @@ const initialState: MatchState = {
   subs: [],
   tactics: [],
   formation: "4-3-3",
-  clock: { isRunning: false, accumulatedSec: 0 },
+  isRunning: false,
+  clock: { accumulatedSec: 0 },
+  subClock: { accumulatedSec: 0 },
+  gameClock: { accumulatedSec: 0 },
   config: { maxOnField: 11, rotationIntervalMinutes: 10, matchTimeMinutes: 90 },
   myTeamScore: 0,
   opponentTeamScore: 0,
@@ -182,8 +186,8 @@ export const useAppStore = create<AppStore>()(
     (set, get) => ({
       ...initialState,
       substitutionQueue: [],
-      subClock: { isRunning: false, accumulatedSec: 0 },
-      gameClock: { isRunning: false, accumulatedSec: 0 },
+      subClock: { accumulatedSec: 0 },
+      gameClock: { accumulatedSec: 0 },
 
       addPlayer: (p) =>
         set((s) => {
@@ -281,8 +285,7 @@ export const useAppStore = create<AppStore>()(
           ),
         })),
 
-      incrementMyScore: () =>
-        set((s) => ({ myTeamScore: s.myTeamScore + 1 })),
+      incrementMyScore: () => set((s) => ({ myTeamScore: s.myTeamScore + 1 })),
       decrementMyScore: () =>
         set((s) => ({ myTeamScore: Math.max(0, s.myTeamScore - 1) })),
       incrementOpponentScore: () =>
@@ -295,22 +298,20 @@ export const useAppStore = create<AppStore>()(
       startClock: () =>
         set((s) => {
           const now = Date.now() / 1000;
-          return s.clock.isRunning
+          return s.isRunning
             ? s
             : {
+                isRunning: true,
                 clock: {
                   ...s.clock,
-                  isRunning: true,
                   startedAtSec: now,
                 },
                 subClock: {
                   ...s.subClock,
-                  isRunning: true,
                   startedAtSec: now,
                 },
                 gameClock: {
                   ...s.gameClock,
-                  isRunning: true,
                   startedAtSec: now,
                 },
               };
@@ -319,33 +320,46 @@ export const useAppStore = create<AppStore>()(
       pauseClock: () =>
         set((s) => {
           if (
-            !s.clock.isRunning ||
+            !s.isRunning ||
             s.clock.startedAtSec == null ||
             s.subClock.startedAtSec == null ||
             s.gameClock.startedAtSec == null
-          )
+          ) {
             return s;
+          }
           const now = Date.now() / 1000;
           const elapsed = now - s.clock.startedAtSec;
           const subElapsed = now - s.subClock.startedAtSec;
+
+          // First, accumulate current live minutes for all players on field
+          let updatedRoster = s.roster;
+          if (s.isRunning && s.gameClock.startedAtSec != null) {
+            const elapsedSinceGameClockStart = now - s.gameClock.startedAtSec;
+            updatedRoster = s.roster.map((pl) =>
+              pl.isOnField
+                ? {
+                    ...pl,
+                    minutesPlayedSec:
+                      pl.minutesPlayedSec + elapsedSinceGameClockStart,
+                  }
+                : pl,
+            );
+          }
+
           return {
+            roster: updatedRoster,
+            isRunning: false,
             clock: {
               ...s.clock,
-              isRunning: false,
-              startedAtSec: undefined,
               accumulatedSec: s.clock.accumulatedSec + elapsed,
             },
             subClock: {
-              ...s.subClock,
-              isRunning: false,
-              startedAtSec: s.subClock.startedAtSec,
               accumulatedSec: s.subClock.accumulatedSec + subElapsed,
+              startedAtSec: undefined,
             },
             gameClock: {
-              ...s.gameClock,
-              isRunning: false,
-              startedAtSec: s.gameClock.startedAtSec,
-              accumulatedSec: s.gameClock.accumulatedSec + subElapsed,
+              accumulatedSec: s.gameClock.accumulatedSec + elapsed,
+              startedAtSec: undefined,
             },
           };
         }),
@@ -356,35 +370,63 @@ export const useAppStore = create<AppStore>()(
             ...player,
             minutesPlayedSec: 0,
           })),
+          isRunning: false,
           clock: {
-            isRunning: false,
             startedAtSec: undefined,
             accumulatedSec: 0,
           },
           subClock: {
-            isRunning: false,
             startedAtSec: undefined,
             accumulatedSec: 0,
           },
           gameClock: {
-            isRunning: false,
             startedAtSec: undefined,
             accumulatedSec: 0,
           },
-        })),
-      setClock: (newTimeInSeconds) =>
-        set(() => ({
-          clock: {
-            isRunning: false,
-            startedAtSec: undefined,
-            accumulatedSec: newTimeInSeconds,
-          },
+          myTeamScore: 0,
+          opponentTeamScore: 0,
         })),
 
+      setGameClockTime: (newTimeInSeconds) =>
+        set((s) => {
+          const now = Date.now() / 1000;
+          let updatedRoster = s.roster;
+
+          // First, accumulate current live minutes for all players on field
+          if (s.isRunning && s.gameClock.startedAtSec != null) {
+            const elapsedSinceGameClockStart = now - s.gameClock.startedAtSec;
+            updatedRoster = s.roster.map((pl) =>
+              pl.isOnField
+                ? {
+                    ...pl,
+                    minutesPlayedSec:
+                      pl.minutesPlayedSec + elapsedSinceGameClockStart,
+                  }
+                : pl,
+            );
+          }
+
+          return {
+            roster: updatedRoster,
+            isRunning: false,
+            clock: {
+              startedAtSec: undefined,
+              accumulatedSec: newTimeInSeconds,
+            },
+            subClock: {
+              startedAtSec: undefined,
+              accumulatedSec: 0,
+            },
+            gameClock: {
+              startedAtSec: undefined,
+              accumulatedSec: newTimeInSeconds,
+            },
+          };
+        }),
+
       resetSubClock: () =>
-        set((s) => ({
+        set(() => ({
           subClock: {
-            isRunning: s.subClock.isRunning,
             startedAtSec: Date.now() / 1000,
             accumulatedSec: 0,
           },
@@ -398,7 +440,7 @@ export const useAppStore = create<AppStore>()(
 
           // Step 1: Accumulate minutes for all players currently ON FIELD
           // This "snapshots" their time played up to this exact moment of substitution.
-          if (s.clock.isRunning && s.clock.startedAtSec) {
+          if (s.isRunning && s.clock.startedAtSec) {
             const elapsedSinceLastClockStart = now - s.clock.startedAtSec;
             roster = roster.map((pl) =>
               pl.isOnField
@@ -553,7 +595,7 @@ export const useAppStore = create<AppStore>()(
           result.tactics = tactics;
           const now = Date.now() / 1000;
           let roster = s.roster;
-          if (s.clock.isRunning && s.clock.startedAtSec) {
+          if (s.isRunning && s.clock.startedAtSec) {
             const elapsed = now - s.clock.startedAtSec;
             roster = roster.map((pl) =>
               pl.isOnField
@@ -581,7 +623,7 @@ export const useAppStore = create<AppStore>()(
           result.roster = roster;
           result.clock = {
             ...s.clock,
-            startedAtSec: s.clock.isRunning ? now : s.clock.startedAtSec,
+            startedAtSec: s.isRunning ? now : s.clock.startedAtSec,
           };
           return result;
         }),
@@ -613,7 +655,7 @@ export const useAppStore = create<AppStore>()(
           const prev = s.tactics.find((t) => t.id === slotId)?.playerId;
           const now = Date.now() / 1000;
           let roster = s.roster;
-          if (s.clock.isRunning && s.clock.startedAtSec) {
+          if (s.isRunning && s.clock.startedAtSec) {
             const elapsed = now - s.clock.startedAtSec;
             roster = roster.map((pl) =>
               pl.isOnField
@@ -653,7 +695,7 @@ export const useAppStore = create<AppStore>()(
             subs: [...s.subs, sub],
             clock: {
               ...s.clock,
-              startedAtSec: s.clock.isRunning ? now : s.clock.startedAtSec,
+              startedAtSec: s.isRunning ? now : s.clock.startedAtSec,
             },
           };
         }),
@@ -663,7 +705,7 @@ export const useAppStore = create<AppStore>()(
         const pl = s.roster.find((p) => p.id === playerId);
         if (!pl) return 0;
         const base = pl.minutesPlayedSec;
-        if (s.clock.isRunning && s.clock.startedAtSec && pl.isOnField) {
+        if (s.isRunning && s.clock.startedAtSec && pl.isOnField) {
           return base + (Date.now() / 1000 - s.clock.startedAtSec);
         }
         return base;
@@ -677,6 +719,17 @@ export const useAppStore = create<AppStore>()(
       resetRoster: () => {
         set({ roster: [] });
       },
+
+      resetPlayerStats: () =>
+        set((s) => ({
+          roster: s.roster.map((player) => ({
+            ...player,
+            minutesPlayedSec: 0,
+            shots: 0,
+            passes: 0,
+            saves: 0,
+          })),
+        })),
 
       resetMatchState: () =>
         set((s) => ({

@@ -49,7 +49,10 @@ export default function Bench({ selectedSlotId, onBenchClick }: BenchProps) {
         maxWidth: 600,
       }}
     >
-      <Typography variant="h5" sx={{ mb: 2, textAlign: 'center', fontWeight: 'bold' }}>
+      <Typography
+        variant="h5"
+        sx={{ mb: 2, textAlign: "center", fontWeight: "bold" }}
+      >
         Bench
         {selectedSlotId
           ? ` — Eligible for ${selectedSlotId.toUpperCase()}`

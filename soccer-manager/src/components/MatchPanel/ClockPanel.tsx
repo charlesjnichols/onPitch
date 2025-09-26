@@ -10,30 +10,30 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  ButtonGroup, // Added
+  ButtonGroup,
+  Stack,
+  IconButton,
 } from "@mui/material";
+// Added Icons
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import PauseIcon from "@mui/icons-material/Pause";
+import RestartAltIcon from "@mui/icons-material/RestartAlt";
 
 export default function ClockPanel() {
-  const { isRunning, startedAtSec, accumulatedSec } = useAppStore(
-    (s) => s.gameClock,
-  );
+  const { startedAtSec, accumulatedSec } = useAppStore((s) => s.gameClock);
+  const isRunning = useAppStore((s) => s.isRunning);
   const startClock = useAppStore((s) => s.startClock);
   const pauseClock = useAppStore((s) => s.pauseClock);
   const resetClock = useAppStore((s) => s.resetClock);
-  // Added score states and actions
+  const resetPlayerStats = useAppStore((s) => s.resetPlayerStats);
   const myTeamScore = useAppStore((s) => s.myTeamScore);
   const opponentTeamScore = useAppStore((s) => s.opponentTeamScore);
   const incrementMyScore = useAppStore((s) => s.incrementMyScore);
   const decrementMyScore = useAppStore((s) => s.decrementMyScore);
-  const incrementOpponentScore = useAppStore(
-    (s) => s.incrementOpponentScore,
-  );
-  const decrementOpponentScore = useAppStore(
-    (s) => s.decrementOpponentScore,
-  );
+  const incrementOpponentScore = useAppStore((s) => s.incrementOpponentScore);
+  const decrementOpponentScore = useAppStore((s) => s.decrementOpponentScore);
 
   const [tick, setTick] = useState(0);
-  // New state for reset confirmation dialog
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
 
   useEffect(() => {
@@ -48,7 +48,6 @@ export default function ClockPanel() {
   );
   const formattedTime = formatClock(Math.floor(elapsedSec));
 
-  // Handlers for the reset confirmation dialog
   const handleOpenResetConfirm = () => {
     setIsResetConfirmOpen(true);
   };
@@ -58,8 +57,9 @@ export default function ClockPanel() {
   };
 
   const handleConfirmReset = () => {
-    resetClock(); // Perform the actual reset
-    handleCloseResetConfirm(); // Close the dialog
+    resetClock();
+    resetPlayerStats();
+    handleCloseResetConfirm();
   };
 
   return (
@@ -73,18 +73,30 @@ export default function ClockPanel() {
     >
       {/* Score Display and Controls */}
       <Box sx={{ display: "flex", alignItems: "center", gap: 2, mt: 1 }}>
-        <ButtonGroup size="small" variant="outlined" aria-label="my team score controls">
+        <ButtonGroup
+          size="small"
+          variant="outlined"
+          aria-label="my team score controls"
+        >
           <Button onClick={decrementMyScore}>-</Button>
           <Button disableRipple>
-            <Typography color="text.primary" variant="body2">My Team: {myTeamScore}</Typography>
+            <Typography variant="body2" color="text.primary">
+              Home: {myTeamScore}
+            </Typography>
           </Button>
           <Button onClick={incrementMyScore}>+</Button>
         </ButtonGroup>
-
-        <ButtonGroup size="small" variant="outlined" aria-label="opponent team score controls">
+        {":"}
+        <ButtonGroup
+          size="small"
+          variant="outlined"
+          aria-label="opponent team score controls"
+        >
           <Button onClick={decrementOpponentScore}>-</Button>
           <Button disableRipple>
-            <Typography color="text.primary" variant="body2">Opponents: {opponentTeamScore}</Typography>
+            <Typography variant="body2" color="text.primary">
+              Away: {opponentTeamScore}
+            </Typography>
           </Button>
           <Button onClick={incrementOpponentScore}>+</Button>
         </ButtonGroup>
@@ -92,25 +104,33 @@ export default function ClockPanel() {
 
       <Typography variant="h4">{formattedTime}</Typography>
 
-      <Box sx={{ display: "flex", gap: 1 }}>
+      {/* Replaced Buttons with IconButtons in a Stack */}
+      <Stack direction="row" spacing={1}>
         {!isRunning ? (
-          <Button variant="contained" color="success" onClick={startClock}>
-            Start
-          </Button>
+          <IconButton
+            color="primary"
+            onClick={startClock}
+            aria-label="start clock"
+          >
+            <PlayArrowIcon />
+          </IconButton>
         ) : (
-          <Button variant="contained" color="primary" onClick={pauseClock}>
-            Pause
-          </Button>
+          <IconButton
+            color="primary"
+            onClick={pauseClock}
+            aria-label="pause clock"
+          >
+            <PauseIcon />
+          </IconButton>
         )}
-        {/* Changed onClick to open the confirmation dialog */}
-        <Button
-          variant="contained"
+        <IconButton
           color="secondary"
           onClick={handleOpenResetConfirm}
+          aria-label="reset clock"
         >
-          Reset
-        </Button>
-      </Box>
+          <RestartAltIcon />
+        </IconButton>
+      </Stack>
 
       {/* Reset Confirmation Dialog */}
       <Dialog
@@ -123,7 +143,7 @@ export default function ClockPanel() {
         <DialogContent>
           <DialogContentText id="reset-dialog-description">
             Are you sure you want to reset the game clock? This will also reset
-            all player minutes played.
+            all player minutes played and scores.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -138,4 +158,3 @@ export default function ClockPanel() {
     </Box>
   );
 }
-
