@@ -10,14 +10,21 @@ body {
   overflow-y: scroll; /* Force vertical scrollbar to always be visible */
 }
 
+/* Define CSS variables for scrollbar styling (add this section) */
+:root {
+  --color-surface-300: #333; /* Dark grey for scrollbar track */
+  --color-surface-400: #555; /* Slightly lighter dark grey for scrollbar thumb */
+  --color-primary: #90caf9; /* Material-UI default primary color for dark mode */
+}
+
 /* Enhanced dark theme classes */
 .dark-theme {
   color-scheme: dark;
 }
 
 /* Touch optimizations */
-button { 
-  touch-action: manipulation; 
+button {
+  touch-action: manipulation;
   transition: all 0.2s ease-in-out;
 }
 

@@ -1,6 +1,16 @@
 import React, { useState } from 'react';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { useMediaQuery, IconButton, Tooltip, Modal } from '@mui/material';
+import {
+    useMediaQuery,
+    IconButton,
+    Tooltip,
+    Modal,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
+    type SelectChangeEvent,
+} from '@mui/material';
 import CssBaseline from '@mui/material/CssBaseline';
 import RosterTab from './components/RosterTab';
 import LineupTab from './components/LineupTab';
@@ -41,8 +51,12 @@ function App() {
     );
     const [tab, setTab] = React.useState<number>(0);
 
-    const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
+    const handleChange = (event: React.SyntheticEvent | SelectChangeEvent<number>, newValue?: number) => {
+        if (typeof newValue === 'number') { // Value from Tabs component
         setTab(newValue);
+        } else { // Value from Select component
+            setTab((event as SelectChangeEvent<number>).target.value as number);
+        }
     };
 
     const colorMode = React.useMemo(
@@ -58,6 +72,11 @@ function App() {
     const handleCloseSettings = () => setIsSettingsOpen(false);
 
     const currentTheme = useTheme();
+    // Detect if the screen is small (e.g., smaller than the 'sm' breakpoint)
+    const isSmallScreen = useMediaQuery(currentTheme.breakpoints.down('sm'));
+
+    // Define tab labels for the Select component
+    const tabLabels = ["Roster", "Lineup", "Match", "Help"];
 
     return (
         <ThemeProvider theme={theme}>
@@ -65,12 +84,32 @@ function App() {
             <Box sx={{ minHeight: '100dvh', bgcolor: 'background.default', color: 'text.primary', pb: `${8}px` }}>
                 <Box sx={{ position: 'sticky', top: 0, zIndex: 10, bgcolor: 'background.paper', width: '100%' }}>
                     <Box sx={{ margin: '0 auto', padding: (theme) => theme.spacing(0, 2) , display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Tabs value={tab} onChange={handleChange} aria-label="basic tabs example" centered sx={{ width: '100%' }}>
-                            <Tab label="Roster" />
-                            <Tab label="Lineup" />
-                            <Tab label="Match" />
-                            <Tab label="Help" />
-                        </Tabs>
+                        {/* Conditional rendering for Tabs or Select */}
+                        {isSmallScreen ? (
+                            <FormControl variant="standard" sx={{ m: 1, minWidth: 120, flexGrow: 1 }}>
+                                <InputLabel id="tab-select-label">Navigation</InputLabel>
+                                <Select
+                                    labelId="tab-select-label"
+                                    id="tab-select"
+                                    value={tab}
+                                    onChange={handleChange}
+                                    label="Navigation"
+                                >
+                                    {tabLabels.map((label, index) => (
+                                        <MenuItem key={label} value={index}>
+                                            {label}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                        ) : (
+                            <Tabs value={tab} onChange={handleChange} aria-label="basic tabs example" centered sx={{ width: '100%' }}>
+                                <Tab label="Roster" />
+                                <Tab label="Lineup" />
+                                <Tab label="Match" />
+                                <Tab label="Help" />
+                            </Tabs>
+                        )}
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <Tooltip title="Toggle light/dark mode">
                             <IconButton sx={{ ml: 1 }} onClick={colorMode.toggleColorMode} color="inherit">
@@ -98,7 +137,7 @@ function App() {
                     {tab === 3 && (
                         <HelpTab />
                     )}
-            </Box>
+                    </Box>
                 <Modal
                     open={isSettingsOpen}
                     onClose={handleCloseSettings}
