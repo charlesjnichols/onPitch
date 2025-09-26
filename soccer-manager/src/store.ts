@@ -1,11 +1,8 @@
 import { create } from "zustand";
-import {
-  persist,
-  createJSONStorage,
-} from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
 import type { MatchState, Player, SubEvent, TacticsSlot } from "./types";
 import { uid } from "./utils/uid";
-import { formatClock } from './utils/time'; // Import formatClock
+import { formatClock } from "./utils/time";
 
 export const formationLayouts = {
   "4-3-3": {
@@ -69,7 +66,6 @@ export const FORMATION_LAYOUTS = formationLayouts as Record<
   Record<string, { x: number; y: number }>
 >;
 
-// this function creates the initial tactics array based on the formation
 const createTacticsForFormation = (formation: FormationId): TacticsSlot[] => {
   const layout = FORMATION_LAYOUTS[formation];
   if (!layout) return [];
@@ -82,12 +78,20 @@ const createTacticsForFormation = (formation: FormationId): TacticsSlot[] => {
   }));
 };
 
+interface SubstitutionRequest {
+  inId: string;
+  outId?: string;
+}
+
+interface ClockState {
+  isRunning: boolean;
+  startedAtSec?: number;
+  accumulatedSec: number;
+}
+
 export interface AppStore extends MatchState {
   getFormattedLiveMinutes(id: string): any;
-  // roster
-  addPlayer: (
-    p: Omit<Player, "id"> & { id?: string }
-  ) => void;
+  addPlayer: (p: Omit<Player, "id"> & { id?: string }) => void;
   updatePlayer: (id: string, patch: Partial<Omit<Player, "id">>) => void;
   removePlayer: (id: string) => void;
   toggleStarter: (id: string, isOnField: boolean) => void;
@@ -96,42 +100,42 @@ export interface AppStore extends MatchState {
   startClock: () => void;
   pauseClock: () => void;
   resetClock: () => void;
-
-  // subs
   makeSub: (inId: string, outId?: string) => void;
-
-  // tactics
   assignPlayerToSlot: (slotId: string, playerId?: string) => void;
   moveSlot: (slotId: string, x: number, y: number) => void;
   swapSlotPlayers: (slotAId: string, slotBId: string) => void;
   benchPlayer: (playerId: string) => void;
-
-  // formation + wrappers
   setFormation: (formation: FormationId) => void;
   placePlayerInSlot: (slotId: string, playerId: string) => void;
   benchPlayerFromSlot: (slotId: string) => void;
   swapSlots: (slotAId: string, slotBId: string) => void;
   subBenchForSlot: (benchPlayerId: string, slotId: string) => void;
-
-  // helpers
   getLiveMinutesSec: (playerId: string) => number;
   resetMatchState: () => void;
   resetRoster: () => void;
+  substitutionQueue: SubstitutionRequest[];
+  enqueueSub: (sub: SubstitutionRequest) => void;
+  cancelSub: (sub: SubstitutionRequest) => void;
+  performSubs: () => void;
+  subClock: ClockState;
+  resetSubClock: () => void;
 }
 
 const initialState: MatchState = {
   roster: [],
   subs: [],
-  tactics: [], // empty array
+  tactics: [],
   formation: "4-3-3",
   clock: { isRunning: false, accumulatedSec: 0 },
-  config: { maxOnField: 11, rotationIntervalMinutes: 10 },
+  config: { maxOnField: 11, rotationIntervalMinutes: 1 },
 };
 
 export const useAppStore = create<AppStore>()(
   persist(
     (set, get) => ({
       ...initialState,
+      substitutionQueue: [],
+      subClock: { isRunning: false, accumulatedSec: 0 },
 
       addPlayer: (p) =>
         set((s) => {
@@ -166,11 +170,10 @@ export const useAppStore = create<AppStore>()(
         set((s) => {
           const currentOn = s.roster.filter((p) => p.isOnField).length;
           if (isOnField && currentOn >= s.config.maxOnField) {
-            // Provide feedback (e.g., using a notification system)
             console.warn(
               "Cannot add player: Maximum number of players on the field reached."
             );
-            return s; // or return s, { ...s, error: "Too many players on field" }
+            return s;
           }
           return {
             roster: s.roster.map((pl) =>
@@ -180,35 +183,47 @@ export const useAppStore = create<AppStore>()(
         }),
 
       startClock: () =>
-        set((s) =>
-          s.clock.isRunning
+        set((s) => {
+          const now = Date.now() / 1000;
+          return s.clock.isRunning
             ? s
             : {
                 clock: {
                   ...s.clock,
                   isRunning: true,
-                  startedAtSec: Date.now() / 1000,
+                  startedAtSec: now,
                 },
-              }
-        ),
+                subClock: {
+                  ...s.subClock,
+                  isRunning: true,
+                  startedAtSec: now,
+                },
+              };
+        }),
 
       pauseClock: () =>
         set((s) => {
-          if (!s.clock.isRunning || s.clock.startedAtSec == null) return s;
+          if (
+            !s.clock.isRunning ||
+            s.clock.startedAtSec == null ||
+            s.subClock.startedAtSec == null
+          )
+            return s;
           const now = Date.now() / 1000;
           const elapsed = now - s.clock.startedAtSec;
-          // accumulate for all on-field players
-          const roster = s.roster.map((pl) =>
-            pl.isOnField
-              ? { ...pl, minutesPlayedSec: pl.minutesPlayedSec + elapsed }
-              : pl
-          );
+          const subElapsed = now - s.subClock.startedAtSec;
           return {
-            roster,
             clock: {
+              ...s.clock,
               isRunning: false,
               startedAtSec: undefined,
               accumulatedSec: s.clock.accumulatedSec + elapsed,
+            },
+            subClock: {
+              ...s.subClock,
+              isRunning: false,
+              startedAtSec: s.subClock.startedAtSec,
+              accumulatedSec: s.subClock.accumulatedSec + subElapsed,
             },
           };
         }),
@@ -224,13 +239,26 @@ export const useAppStore = create<AppStore>()(
             startedAtSec: undefined,
             accumulatedSec: 0,
           },
+          subClock: {
+            isRunning: s.subClock.isRunning,
+            startedAtSec: Date.now() / 1000,
+            accumulatedSec: 0,
+          },
+        })),
+
+      resetSubClock: () =>
+        set((s) => ({
+          subClock: {
+            isRunning: s.subClock.isRunning,
+            startedAtSec: Date.now() / 1000,
+            accumulatedSec: 0,
+          },
         })),
 
       makeSub: (inId, outId) =>
         set((s) => {
           const now = Date.now() / 1000;
           let roster = s.roster;
-          // On substitution, freeze current on-field elapsed for everyone
           if (s.clock.isRunning && s.clock.startedAtSec) {
             const elapsed = now - s.clock.startedAtSec;
             roster = roster.map((pl) =>
@@ -239,13 +267,11 @@ export const useAppStore = create<AppStore>()(
                 : pl
             );
           }
-          // handle out
           if (outId) {
             roster = roster.map((pl) =>
               pl.id === outId ? { ...pl, isOnField: false } : pl
             );
           }
-          // handle in
           roster = roster.map((pl) =>
             pl.id === inId ? { ...pl, isOnField: true } : pl
           );
@@ -271,11 +297,6 @@ export const useAppStore = create<AppStore>()(
           return {
             roster,
             subs: [...s.subs, sub],
-            // restart clock anchor
-            clock: {
-              ...s.clock,
-              startedAtSec: s.clock.isRunning ? now : s.clock.startedAtSec,
-            },
             tactics: s.tactics.map((slot) => {
               if (slot.playerId === outId) {
                 return { ...slot, playerId: inId };
@@ -290,7 +311,6 @@ export const useAppStore = create<AppStore>()(
 
       assignPlayerToSlot: (slotId, playerId) =>
         set((s) => {
-          // Clear existing occurrence of this player from any slot, and set on target slot
           const tactics = s.tactics.map((slot) => ({ ...slot }));
           if (playerId) {
             for (const slot of tactics) {
@@ -346,7 +366,6 @@ export const useAppStore = create<AppStore>()(
           const current = s.tactics.find((t) => t.id === slotId);
           const prevPlayerId = current?.playerId;
           const result: any = {};
-          // assign slot
           const tactics = s.tactics.map((t) =>
             t.id === slotId
               ? { ...t, playerId }
@@ -355,7 +374,6 @@ export const useAppStore = create<AppStore>()(
               : t
           );
           result.tactics = tactics;
-          // perform sub semantics to update onField flags and minutes
           const now = Date.now() / 1000;
           let roster = s.roster;
           if (s.clock.isRunning && s.clock.startedAtSec) {
@@ -474,7 +492,7 @@ export const useAppStore = create<AppStore>()(
         return base;
       },
 
-      getFormattedLiveMinutes: (playerId: string) => { // new
+      getFormattedLiveMinutes: (playerId: string) => {
         const totalSeconds = get().getLiveMinutesSec(playerId);
         return formatClock(Math.floor(totalSeconds));
       },
@@ -492,6 +510,43 @@ export const useAppStore = create<AppStore>()(
             isOnField: false,
           })),
         })),
+
+      enqueueSub: (sub) =>
+        set((state) => {
+          const { inId, outId } = sub;
+          let newQueue = [...state.substitutionQueue];
+
+          // Cancel existing subs involving the incoming player
+          newQueue = newQueue.filter(
+            (existingSub) =>
+              existingSub.inId !== inId && existingSub.outId !== inId
+          );
+
+          if (outId) {
+            // Cancel existing subs involving the outgoing player
+            newQueue = newQueue.filter(
+              (existingSub) =>
+                existingSub.inId !== outId && existingSub.outId !== outId
+            );
+          }
+
+          return { substitutionQueue: [...newQueue, sub] };
+        }),
+
+      cancelSub: (subToRemove) =>
+        set((state) => ({
+          substitutionQueue: state.substitutionQueue.filter(
+            (sub) => sub !== subToRemove
+          ),
+        })),
+
+      performSubs: () => {
+        const { makeSub, substitutionQueue } = get();
+        substitutionQueue.forEach((sub) => {
+          makeSub(sub.inId, sub.outId);
+        });
+        set({ substitutionQueue: [] });
+      },
     }),
     {
       name: "soccer-manager",
@@ -518,3 +573,4 @@ export const useAppStore = create<AppStore>()(
     }
   )
 );
+

@@ -1,11 +1,11 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import BottomSheet from "../MatchPanel/BottomSheet";
 import { useAppStore } from "../../store";
 import { SLOT_ELIGIBLE_TAGS } from "../../utils/positions";
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, Button } from "@mui/material";
 import BenchItem from "../Bench/BenchItem";
 import type { Player } from "../../types";
-import { formationLayouts } from '../../store'; // Import formationLayouts
+import { formationLayouts } from '../../store';
 
 interface SubSheetProps {
   open: boolean;
@@ -15,41 +15,42 @@ interface SubSheetProps {
 
 const SubList = ({
   players,
-  makeSub,
   benchPlayerId,
   onClose,
 }: {
   players: Player[];
-  makeSub: (inId: string, outId?: string) => void;
   benchPlayerId: string;
   onClose: () => void;
-}) => (
-  <>
-    {players.map((p) => {
-      const slot = useAppStore
-        .getState()
-        .tactics.find((t) => t.playerId === p.id);
-      const position = slot ? slot.id.toUpperCase() : "N/A";
-      return (
-        <Box
-          key={p.id}
-          onClick={() => {
-            makeSub(benchPlayerId, p.id || undefined);
-            onClose();
-          }}
-          sx={{ cursor: "pointer", backgroundColor: "rgba(20, 20, 20, 0.8)" }}
-        >
-          <BenchItem
-            id={p.id}
-            name={p.name}
-            number={p.number}
-            positionTags={[position]}
-          />
-        </Box>
-      );
-    })}
-  </>
-);
+}) => {
+  const enqueueSub = useAppStore((s) => s.enqueueSub);
+  return (
+    <>
+      {players.map((p) => {
+        const slot = useAppStore
+          .getState()
+          .tactics.find((t) => t.playerId === p.id);
+        const position = slot ? slot.id.toUpperCase() : "N/A";
+        return (
+          <Box
+            key={p.id}
+            onClick={() => {
+              enqueueSub({ inId: benchPlayerId!, outId: p.id });
+              onClose();
+            }}
+            sx={{ cursor: "pointer", backgroundColor: "rgba(20, 20, 20, 0.8)" }}
+          >
+            <BenchItem
+              id={p.id}
+              name={p.name}
+              number={p.number}
+              positionTags={[position]}
+            />
+          </Box>
+        );
+      })}
+    </>
+  );
+};
 
 export default function SubSheet({
   open,
@@ -59,9 +60,9 @@ export default function SubSheet({
   const roster = useAppStore((s) => s.roster);
   const tactics = useAppStore((s) => s.tactics);
   const formation = useAppStore((s) => s.formation);
-  const getLiveMinutesSec = useAppStore((s) => s.getLiveMinutesSec);
-  const makeSub = useAppStore((s) => s.makeSub);
   
+  const getLiveMinutesSec = useAppStore((s) => s.getLiveMinutesSec);
+      
   const { eligible, ineligible } = useMemo(() => {
     if (!benchPlayerId)
       return { eligible: [], ineligible: [] } as {
@@ -112,26 +113,26 @@ export default function SubSheet({
 
     // Define the desired order of positions based on the order property in the formation layout
     const positionOrder = Object.entries(currentFormationLayout)
-        .sort(([, a], [, b]) => a.order - b.order)
-        .map(([positionId]) => positionId.toUpperCase());
-    
+      .sort(([, a], [, b]) => a.order - b.order)
+      .map(([positionId]) => positionId.toUpperCase());
+
     const sortFn = (a: Player, b: Player) => {
       const indexA = positionOrder.indexOf(tactics.find(t => t.playerId === a.id)?.id.toUpperCase() || 'N/A');
       const indexB = positionOrder.indexOf(tactics.find(t => t.playerId === b.id)?.id.toUpperCase() || 'N/A');
-        
+
       if (indexA !== -1 && indexB !== -1) {
-          return indexA - indexB; // Sort by position order if both positions are in the order array
+        return indexA - indexB; // Sort by position order if both positions are in the order array
       } else if (indexA !== -1) {
-          return -1; // a comes before b if only a's position is in the order array
+        return -1; // a comes before b if only a's position is in the order array
       } else if (indexB !== -1) {
-          return 1; // b comes before a if only b's position is in the order array
+        return 1; // b comes before a if only b's position is in the order array
       } else {
-          const timeDiff = getLiveMinutesSec(b.id) - getLiveMinutesSec(a.id);
-          if (timeDiff !== 0) {
-              return timeDiff; // Sort by time
-          }
-          //if time is equal, then sort by number
-          return (a.number || 0) - (b.number || 0); // Sort by number
+        const timeDiff = getLiveMinutesSec(b.id) - getLiveMinutesSec(a.id);
+        if (timeDiff !== 0) {
+          return timeDiff; // Sort by time
+        }
+        //if time is equal, then sort by number
+        return (a.number || 0) - (b.number || 0); // Sort by number
       }
     };
 
@@ -159,7 +160,6 @@ export default function SubSheet({
             <Typography variant="subtitle2">Preferred Players</Typography>
             <SubList
               players={eligible}
-              makeSub={makeSub}
               benchPlayerId={benchPlayerId!}
               onClose={onClose}
             />
@@ -171,7 +171,6 @@ export default function SubSheet({
             <Typography variant="subtitle2">All Players</Typography>
             <SubList
               players={ineligible}
-              makeSub={makeSub}
               benchPlayerId={benchPlayerId!}
               onClose={onClose}
             />
