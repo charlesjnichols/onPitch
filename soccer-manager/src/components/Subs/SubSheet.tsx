@@ -62,7 +62,8 @@ export default function SubSheet({
   const roster = useAppStore((s) => s.roster);
   const tactics = useAppStore((s) => s.tactics);
 
-  const { eligible, ineligible } = useMemo(() => {
+  // const { eligible, ineligible } = useMemo(() => {
+  const { ineligible } = useMemo(() => {
     if (!benchPlayerId)
       return { eligible: [], ineligible: [] } as {
         eligible: Player[];
@@ -96,16 +97,16 @@ export default function SubSheet({
 
     const onField = roster.filter((p) => onFieldIds.has(p.id));
 
-    const eligiblePlayers: Player[] = [];
+    // const eligiblePlayers: Player[] = [];
     const ineligiblePlayers: Player[] = [];
 
     for (const p of onField) {
-      const slotId = playerIdToSlotId.get(p.id);
-      if (slotId ? eligibleSlotIds.has(slotId) : true) {
-        eligiblePlayers.push(p);
-      } else {
+      // const slotId = playerIdToSlotId.get(p.id);
+      // if (slotId ? eligibleSlotIds.has(slotId) : true) {
+      //   eligiblePlayers.push(p);
+      // } else {
         ineligiblePlayers.push(p);
-      }
+      // }
     }
 
     const sortFn = (a: Player, b: Player) => {
@@ -113,8 +114,8 @@ export default function SubSheet({
     };
 
     return {
-      eligible: eligiblePlayers.sort(sortFn).slice(0, 8),
-      ineligible: ineligiblePlayers.sort(sortFn).slice(0, 8),
+      // eligible: eligiblePlayers.sort(sortFn),
+      ineligible: ineligiblePlayers.sort(sortFn),
     };
   }, [roster, tactics, benchPlayerId]);
 
@@ -125,13 +126,14 @@ export default function SubSheet({
       title="Sub for"
     >
       <Box sx={{ display: "grid", gap: 1 }}>
-        {eligible.length === 0 && ineligible.length === 0 && (
+        {/* {eligible.length === 0 && ineligible.length === 0 && ( */}
+        {ineligible.length === 0 && (
           <Typography variant="subtitle2" color="textSecondary">
             No eligible on-field players
           </Typography>
         )}
 
-        {eligible.length > 0 && (
+        {/* {eligible.length > 0 && (
           <>
             <Typography variant="subtitle2">Preferred Players</Typography>
             <SubList
@@ -140,7 +142,7 @@ export default function SubSheet({
               onClose={onClose}
             />
           </>
-        )}
+        )} */}
 
         {ineligible.length > 0 && (
           <>
