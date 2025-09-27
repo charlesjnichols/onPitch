@@ -44,7 +44,7 @@ export interface MatchConfig {
 export interface MatchClockState {
   // Epoch ms when the clock last started (for background-safe tracking)
   startedAtSec?: number;
-  // Total accumulated ms while paused
+  // Total accumulated ms when you hit pause
   accumulatedSec: number;
 }
 
@@ -61,8 +61,6 @@ export interface MatchState {
   formation: FormationId;
   isRunning: boolean;
   clock: MatchClockState;
-  subClock: MatchClockState;
-  gameClock: MatchClockState;
   config: MatchConfig;
   myTeamScore: number;
   opponentTeamScore: number;

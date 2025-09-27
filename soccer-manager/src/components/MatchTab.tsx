@@ -1,33 +1,32 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import ClockPanel from "./MatchPanel/ClockPanel";
 import { useAppStore } from "../store";
 import SubSheet from "./Subs/SubSheet";
 import {
   Button,
   Box,
-  IconButton,
+  // IconButton,
   Typography,
   Stack,
   ButtonGroup,
   Divider,
 } from "@mui/material";
 import Bench from "./Bench/Bench";
-import { formatClock, getTotalElapsedSec } from "../utils/time";
+// import { getTotalElapsedSec } from "../utils/time";
 import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
 import PersonRemoveAlt1Icon from "@mui/icons-material/PersonRemoveAlt1";
 import ArrowRightAltIcon from "@mui/icons-material/ArrowRightAlt";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import WarningIcon from "@mui/icons-material/Warning";
-import RestartAltIcon from "@mui/icons-material/RestartAlt";
+// import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 
 export default function MatchTab() {
   const roster = useAppStore((s) => s.roster);
   const getFormattedLiveMinutes = useAppStore((s) => s.getFormattedLiveMinutes);
   const isRunning = useAppStore((s) => s.isRunning);
-  const { startedAtSec: subStartedAtSec, accumulatedSec: subAccumulatedSec } =
-    useAppStore((s) => s.subClock);
+
   const tactics = useAppStore((s) => s.tactics);
   const formation = useAppStore((s) => s.formation);
   const {
@@ -48,10 +47,10 @@ export default function MatchTab() {
     undefined,
   );
 
-  const resetSubClock = useAppStore((s) => s.resetSubClock);
-  const rotationIntervalMinutes = useAppStore(
-    (s) => s.config.rotationIntervalMinutes,
-  );
+  // const resetSubClock = useAppStore((s) => s.resetSubClock);
+  // const rotationIntervalMinutes = useAppStore(
+  //   (s) => s.config.rotationIntervalMinutes,
+  // );
 
   const handleBenchClick = (benchId: string) => {
     setBenchId(benchId);
@@ -67,19 +66,20 @@ export default function MatchTab() {
 
   const [onFieldPlayers, setOnFieldPlayers] = useState<any[]>([]);
 
-  const { startedAtSec, accumulatedSec } = useAppStore((s) => s.subClock);
-  const elapsedSec = useMemo(
-    () => getTotalElapsedSec(isRunning, startedAtSec, accumulatedSec),
-    [isRunning, startedAtSec, accumulatedSec, tick],
-  );
+  // const { startedAtSec, accumulatedSec } = useAppStore((s) => s.clock);
+  // const elapsedSec = useMemo(
+  //   () => getTotalElapsedSec(isRunning, startedAtSec, accumulatedSec),
+  //   [isRunning, startedAtSec, accumulatedSec, tick],
+  // );
 
-  const subElapsedSec = useMemo(
-    () => getTotalElapsedSec(isRunning, subStartedAtSec, subAccumulatedSec),
-    [isRunning, subStartedAtSec, subAccumulatedSec, tick],
-  );
-  const subFormattedTime = formatClock(Math.floor(subElapsedSec));
-  const intervalSec = rotationIntervalMinutes * 60;
-  const showRotation = isRunning && elapsedSec > intervalSec;
+  // const subElapsedSec = useMemo(
+  //   () => getTotalElapsedSec(isRunning, subStartedAtSec, subAccumulatedSec),
+  //   [isRunning, subStartedAtSec, subAccumulatedSec, tick],
+  // );
+  // const subFormattedTime = formatClock(Math.floor(subElapsedSec));
+  // const intervalSec = rotationIntervalMinutes * 60;
+  // const showRotation = isRunning && elapsedSec > intervalSec;
+  const showRotation = false;
 
   useEffect(() => {
     const onField = roster.filter((p) => p.isOnField);
@@ -187,14 +187,14 @@ export default function MatchTab() {
           </Box>
         )}
 
-        <Box sx={{ display: "flex", alignItems: "center", p: 1 }}>
+        {/* <Box sx={{ display: "flex", alignItems: "center", p: 1 }}>
           <Typography variant="body2">Sub Clock: {subFormattedTime}</Typography>
           {isRunning && (
             <IconButton color="secondary" size="small" onClick={resetSubClock}>
               <RestartAltIcon />
             </IconButton>
           )}
-        </Box>
+        </Box> */}
 
         {substitutionQueue.length > 0 &&
           substitutionQueue.map((sub, index) => {

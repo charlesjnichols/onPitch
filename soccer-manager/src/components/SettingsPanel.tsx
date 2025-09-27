@@ -8,9 +8,7 @@ interface SettingsPanelProps {
 
 export default function SettingsPanel({ onClose }: SettingsPanelProps) {
   const config = useAppStore((s) => s.config);
-  const gameClockAccumulatedSec = useAppStore(
-    (s) => s.gameClock.accumulatedSec,
-  );
+  const gameClockAccumulatedSec = useAppStore((s) => s.clock.accumulatedSec);
   const setConfig = useAppStore((s) => s.setConfig);
   const setGameClockTime = useAppStore((s) => s.setGameClockTime);
 

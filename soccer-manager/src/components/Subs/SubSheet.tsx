@@ -105,7 +105,7 @@ export default function SubSheet({
       // if (slotId ? eligibleSlotIds.has(slotId) : true) {
       //   eligiblePlayers.push(p);
       // } else {
-        ineligiblePlayers.push(p);
+      ineligiblePlayers.push(p);
       // }
     }
 

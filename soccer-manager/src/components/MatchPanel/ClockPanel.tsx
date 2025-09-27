@@ -20,7 +20,7 @@ import PauseIcon from "@mui/icons-material/Pause";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 
 export default function ClockPanel() {
-  const { startedAtSec, accumulatedSec } = useAppStore((s) => s.gameClock);
+  const { startedAtSec, accumulatedSec } = useAppStore((s) => s.clock);
   const isRunning = useAppStore((s) => s.isRunning);
   const startClock = useAppStore((s) => s.startClock);
   const pauseClock = useAppStore((s) => s.pauseClock);
